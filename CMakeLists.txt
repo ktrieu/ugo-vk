@@ -8,4 +8,6 @@ project(
     LANGUAGES CXX
 )
 
+set(EXECUTABLE_OUTPUT_PATH "target/")
+
 add_executable(ugo-vk-bin src/main.cpp)
