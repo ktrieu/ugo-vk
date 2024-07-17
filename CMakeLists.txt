@@ -11,6 +11,7 @@ project(
 set(EXECUTABLE_OUTPUT_PATH "target/")
 
 find_package(glfw3 CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 
 add_executable(ugo-vk-bin 
     src/main.cpp
@@ -19,3 +20,4 @@ add_executable(ugo-vk-bin
 )
 
 target_link_libraries(ugo-vk-bin glfw)
+target_link_libraries(ugo-vk-bin Vulkan::Vulkan)

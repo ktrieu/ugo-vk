@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     {
         const char *glfwError = nullptr;
         glfwGetError(&glfwError);
-        std::cout << std::format("GLFW initalization error: {}\n", glfwError);
+        std::cout << std::format("GLFW initialization error: {}\n", glfwError);
 
         return 1;
     }
@@ -20,6 +20,8 @@ int main(int argc, char **argv)
     Window window(1080, 720, "ugo-vk");
 
     window.run();
+
+    glfwTerminate();
 
     return 0;
 }
