@@ -10,4 +10,7 @@ project(
 
 set(EXECUTABLE_OUTPUT_PATH "target/")
 
+find_package(glfw3 CONFIG REQUIRED)
+
 add_executable(ugo-vk-bin src/main.cpp)
+target_link_libraries(ugo-vk-bin glfw)
