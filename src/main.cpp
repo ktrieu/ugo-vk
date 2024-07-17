@@ -3,16 +3,23 @@
 
 #include <GLFW/glfw3.h>
 
+#include "window/window.h"
+
 int main(int argc, char **argv)
 {
-    glfwInit();
-
-    GLFWwindow *window = glfwCreateWindow(1080, 720, "ugo-vk", nullptr, nullptr);
-
-    while (!glfwWindowShouldClose(window))
+    int result = glfwInit();
+    if (result == GLFW_FALSE)
     {
-        glfwPollEvents();
+        const char *glfwError = nullptr;
+        glfwGetError(&glfwError);
+        std::cout << std::format("GLFW initalization error: {}\n", glfwError);
+
+        return 1;
     }
+
+    Window window(1080, 720, "ugo-vk");
+
+    window.run();
 
     return 0;
 }
