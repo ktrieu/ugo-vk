@@ -9,6 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/target/ugo-vk-bin",
+            "preLaunchTask": "build",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}/build/target/",
