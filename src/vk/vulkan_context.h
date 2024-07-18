@@ -7,11 +7,14 @@ class VulkanContext
 {
 public:
     VulkanContext(std::string_view app_name);
+    ~VulkanContext();
 
 private:
     std::vector<const char *> get_required_extensions();
     std::vector<const char *> get_validation_layers();
     void create_instance();
+
+    void create_debug_messenger();
 
 #ifdef NDEBUG
     const bool enable_validation_layers = false;
@@ -20,6 +23,7 @@ private:
 #endif
 
     VkInstance instance;
+    VkDebugUtilsMessengerEXT debug_messenger;
 
     std::string app_name;
 };

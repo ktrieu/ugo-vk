@@ -5,12 +5,32 @@
 #include <stdexcept>
 #include <algorithm>
 #include <format>
+#include <iostream>
 
 #include <GLFW/glfw3.h>
 
 VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
 {
     this->create_instance();
+}
+
+VulkanContext::~VulkanContext()
+{
+    if (this->enable_validation_layers)
+    {
+        auto debug_messenger_destroy_func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (debug_messenger_destroy_func != nullptr)
+        {
+            debug_messenger_destroy_func(this->instance, this->debug_messenger, nullptr);
+        }
+        else
+        {
+            // Oops. Things are already broken if we can't find the destroy function. Let's just log and move on.
+            std::cout << "No debug messenger destroy function found.\n";
+        }
+    }
+
+    vkDestroyInstance(this->instance, nullptr);
 }
 
 std::vector<const char *> VulkanContext::get_required_extensions()
@@ -95,5 +115,44 @@ void VulkanContext::create_instance()
     if (create_result != VK_SUCCESS)
     {
         throw std::runtime_error("Could not initialize Vulkan.");
+    }
+
+    if (this->enable_validation_layers)
+    {
+        this->create_debug_messenger();
+    }
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    void *pUserData)
+{
+
+    std::cerr << std::format("Validation layer message: {}", pCallbackData->pMessage) << std::endl;
+
+    return VK_FALSE;
+}
+
+void VulkanContext::create_debug_messenger()
+{
+    VkDebugUtilsMessengerCreateInfoEXT info = {};
+
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    info.pfnUserCallback = debugCallback;
+
+    auto create_func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->instance, "vkCreateDebugUtilsMessengerEXT");
+    if (create_func == nullptr)
+    {
+        throw std::runtime_error("Debug messenger create function not found.");
+    }
+
+    VkResult result = create_func(this->instance, &info, nullptr, &this->debug_messenger);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create debug messenger.");
     }
 }
