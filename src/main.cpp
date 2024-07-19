@@ -1,4 +1,3 @@
-#include <format>
 #include <iostream>
 #include <stdexcept>
 
@@ -14,7 +13,7 @@ int main(int argc, char **argv)
     {
         const char *glfwError = nullptr;
         glfwGetError(&glfwError);
-        std::cout << std::format("GLFW initialization error: {}\n", glfwError);
+        std::cout << "GLFW initialization error: " << glfwError << "\n";
 
         return 1;
     }

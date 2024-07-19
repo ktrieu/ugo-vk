@@ -4,7 +4,6 @@
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
-#include <format>
 #include <iostream>
 
 #include <GLFW/glfw3.h>
@@ -81,7 +80,11 @@ std::vector<const char *> VulkanContext::get_validation_layers()
         }
         else
         {
-            throw std::runtime_error(std::format("Required validation layer {} not found.", required_layer));
+            std::string err;
+            err.append("Required validation layer ");
+            err.append(required_layer);
+            err.append(" not found.");
+            throw std::runtime_error(err);
         }
     }
 
@@ -130,7 +133,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     void *pUserData)
 {
 
-    std::cerr << std::format("Validation layer message: {}", pCallbackData->pMessage) << std::endl;
+    std::cerr << "Validation layer message: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
