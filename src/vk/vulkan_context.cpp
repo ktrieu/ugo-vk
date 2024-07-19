@@ -45,6 +45,9 @@ std::vector<const char *> VulkanContext::get_required_extensions()
         required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
+    // We need this for MacOS, but it's OK to have for everyone.
+    required_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+
     // Just return the GLFW extension list for now - we may want more later.
     return required_extensions;
 }
@@ -106,6 +109,9 @@ void VulkanContext::create_instance()
     auto required_extensions = this->get_required_extensions();
     create_info.enabledExtensionCount = required_extensions.size();
     create_info.ppEnabledExtensionNames = required_extensions.data();
+
+    // We need this for MacOS, but it's OK to have for everyone.
+    create_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     auto validation_layers = this->get_validation_layers();
     if (this->enable_validation_layers)
