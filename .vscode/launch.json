@@ -5,29 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/build/target/ugo-vk-bin",
-            "preLaunchTask": "build",
+            "name": "Launch",
+            "program": "${workspaceFolder}/build/target/ugo-vk-bin",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceRoot}/build/target/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
+            "cwd": "${workspaceFolder}/build/target",
+            "preLaunchTask": "build",
         }
     ]
 }
