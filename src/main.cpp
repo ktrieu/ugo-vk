@@ -1,7 +1,7 @@
-#include <iostream>
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
+#include <fmt/core.h>
 
 #include "window/window.h"
 #include "vk/vulkan_context.h"
@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     {
         const char *glfwError = nullptr;
         glfwGetError(&glfwError);
-        std::cout << "GLFW initialization error: " << glfwError << "\n";
+        fmt::println("GLFW initialization error: {}", glfwError);
 
         return 1;
     }
@@ -27,9 +27,7 @@ int main(int argc, char **argv)
     }
     catch (std::runtime_error &e)
     {
-        std::cout << "Runtime error:\n"
-                  << e.what()
-                  << "\n";
+        fmt::println("Runtime error: {}", e.what());
     }
 
     glfwTerminate();

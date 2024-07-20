@@ -4,9 +4,9 @@
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
-#include <iostream>
 
 #include <GLFW/glfw3.h>
+#include <fmt/core.h>
 
 VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
 {
@@ -25,7 +25,7 @@ VulkanContext::~VulkanContext()
         else
         {
             // Oops. Things are already broken if we can't find the destroy function. Let's just log and move on.
-            std::cout << "No debug messenger destroy function found.\n";
+            fmt::println("No debug messenger destroy function found.");
         }
     }
 
@@ -83,11 +83,7 @@ std::vector<const char *> VulkanContext::get_validation_layers()
         }
         else
         {
-            std::string err;
-            err.append("Required validation layer ");
-            err.append(required_layer);
-            err.append(" not found.");
-            throw std::runtime_error(err);
+            throw std::runtime_error(fmt::format("Required validation layer {} not found.", required_layer));
         }
     }
 
@@ -139,7 +135,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     void *pUserData)
 {
 
-    std::cerr << "Validation layer message: " << pCallbackData->pMessage << std::endl;
+    fmt::println("Validation layer message: {}", pCallbackData->pMessage);
 
     return VK_FALSE;
 }
