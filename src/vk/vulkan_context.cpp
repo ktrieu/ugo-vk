@@ -11,6 +11,7 @@
 VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
 {
     this->create_instance();
+    this->device.emplace(this->select_physical_device());
 }
 
 VulkanContext::~VulkanContext()
@@ -126,6 +127,28 @@ void VulkanContext::create_instance()
     {
         this->create_debug_messenger();
     }
+}
+
+VulkanDevice VulkanContext::select_physical_device()
+{
+    uint32_t num_available;
+    vkEnumeratePhysicalDevices(this->instance, &num_available, nullptr);
+
+    std::vector<VkPhysicalDevice> available(num_available);
+    vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
+
+    std::vector<int> device_scores(num_available);
+
+    for (int i = 0; i < num_available; i++)
+    {
+        VkPhysicalDeviceProperties2 properties = {};
+        properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        vkGetPhysicalDeviceProperties2(available[i], &properties);
+        fmt::println("Device {}: {}", i, properties.properties.deviceName);
+    }
+
+    // Just return the first one for now.
+    return VulkanDevice(*this, available[0]);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(

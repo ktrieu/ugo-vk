@@ -2,7 +2,9 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
+#include "vulkan_device.h"
 class VulkanContext
 {
 public:
@@ -14,6 +16,8 @@ private:
     std::vector<const char *> get_validation_layers();
     void create_instance();
 
+    VulkanDevice select_physical_device();
+
     void create_debug_messenger();
 
 #ifdef NDEBUG
@@ -24,6 +28,8 @@ private:
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debug_messenger;
+
+    std::optional<VulkanDevice> device;
 
     std::string app_name;
 };

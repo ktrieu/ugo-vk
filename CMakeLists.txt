@@ -20,6 +20,8 @@ add_executable(ugo-vk-bin
     src/window/window.cpp
     src/vk/vulkan_context.h
     src/vk/vulkan_context.cpp
+    src/vk/vulkan_device.h
+    src/vk/vulkan_device.cpp
 )
 
 target_link_libraries(ugo-vk-bin glfw)
