@@ -1,2 +1,6 @@
 # CMake build directory
 build/
+build-win/
+
+# Visual Studio files
+.vs/
