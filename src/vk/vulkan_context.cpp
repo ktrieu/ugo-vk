@@ -137,18 +137,29 @@ VulkanDevice VulkanContext::select_physical_device()
     std::vector<VkPhysicalDevice> available(num_available);
     vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
 
-    std::vector<int> device_scores(num_available);
+    std::vector<PhysicalDeviceInfo> device_infos;
 
     for (int i = 0; i < num_available; i++)
     {
-        VkPhysicalDeviceProperties2 properties = {};
-        properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        vkGetPhysicalDeviceProperties2(available[i], &properties);
-        fmt::println("Device {}: {}", i, properties.properties.deviceName);
+        PhysicalDeviceInfo& device_info = device_infos.emplace_back(available[i]);
+        fmt::println("Device {}: {}", i, device_info.properties.properties.deviceName);
+        for (int queue_idx = 0; queue_idx < device_info.queue_families.size(); queue_idx++) {
+            VkQueueFamilyProperties2 queue_properties = device_info.queue_families[queue_idx];
+            fmt::println("Queue {}: {} queues", queue_idx, queue_properties.queueFamilyProperties.queueCount);
+            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                fmt::println("- Graphics");
+            }
+            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                fmt::println("- Transfer");
+            }
+            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                fmt::println("- Compute");
+            }
+        }
     }
 
     // Just return the first one for now.
-    return VulkanDevice(*this, available[0]);
+    return VulkanDevice(*this, device_infos[0]);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
