@@ -8,6 +8,9 @@
 #include <GLFW/glfw3.h>
 #include <fmt/core.h>
 
+#include "vulkan_error.h"
+#include "../logger.h"
+
 VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
 {
     this->create_instance();
@@ -60,10 +63,12 @@ const std::vector<const char *> REQUIRED_VALIDATION_LAYERS = {
 std::vector<const char *> VulkanContext::get_validation_layers()
 {
     uint32_t num_layers;
-    vkEnumerateInstanceLayerProperties(&num_layers, nullptr);
+    auto result = vkEnumerateInstanceLayerProperties(&num_layers, nullptr);
+    vk_check(result);
 
     std::vector<VkLayerProperties> available_layers(num_layers);
-    vkEnumerateInstanceLayerProperties(&num_layers, available_layers.data());
+    result = vkEnumerateInstanceLayerProperties(&num_layers, available_layers.data());
+    vk_check(result);
 
     std::vector<const char *>
         validation_layers;
@@ -117,11 +122,8 @@ void VulkanContext::create_instance()
         create_info.ppEnabledLayerNames = validation_layers.data();
     }
 
-    VkResult create_result = vkCreateInstance(&create_info, nullptr, &this->instance);
-    if (create_result != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not initialize Vulkan.");
-    }
+    VkResult result = vkCreateInstance(&create_info, nullptr, &this->instance);
+    vk_check(result);
 
     if (this->enable_validation_layers)
     {
@@ -132,28 +134,30 @@ void VulkanContext::create_instance()
 VulkanDevice VulkanContext::select_physical_device()
 {
     uint32_t num_available;
-    vkEnumeratePhysicalDevices(this->instance, &num_available, nullptr);
+    auto result = vkEnumeratePhysicalDevices(this->instance, &num_available, nullptr);
+    vk_check(result);
 
     std::vector<VkPhysicalDevice> available(num_available);
-    vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
+    result = vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
+    vk_check(result);
 
     std::vector<PhysicalDeviceInfo> device_infos;
 
     for (int i = 0; i < num_available; i++)
     {
         PhysicalDeviceInfo& device_info = device_infos.emplace_back(available[i]);
-        fmt::println("Device {}: {}", i, device_info.properties.properties.deviceName);
+        log("Device {}: {}", i, device_info.properties.properties.deviceName);
         for (int queue_idx = 0; queue_idx < device_info.queue_families.size(); queue_idx++) {
             VkQueueFamilyProperties2 queue_properties = device_info.queue_families[queue_idx];
             fmt::println("Queue {}: {} queues", queue_idx, queue_properties.queueFamilyProperties.queueCount);
             if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                fmt::println("- Graphics");
+                log("- Graphics");
             }
             if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) {
-                fmt::println("- Transfer");
+                log("- Transfer");
             }
             if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                fmt::println("- Compute");
+                log("- Compute");
             }
         }
     }
@@ -190,8 +194,5 @@ void VulkanContext::create_debug_messenger()
     }
 
     VkResult result = create_func(this->instance, &info, nullptr, &this->debug_messenger);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not create debug messenger.");
-    }
+    vk_check(result);
 }

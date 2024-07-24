@@ -6,6 +6,8 @@
 
 #include <fmt/format.h>
 
+#include "vulkan_error.h"
+
 PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device) : device(device)
 {
 	this->properties = {};
@@ -68,10 +70,7 @@ void VulkanDevice::create_logical_device()
 	info.pQueueCreateInfos = &queue_create_info;
 
 	VkResult result = vkCreateDevice(this->physical_device_info.device, &info, nullptr, &this->logical_device);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error(fmt::format("Device create failed: {}", (uint32_t)result));
-	}
+	vk_check(result);
 
 	VkDeviceQueueInfo2 queue_info = {};
 	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
