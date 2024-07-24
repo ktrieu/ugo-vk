@@ -33,6 +33,8 @@ VulkanContext::~VulkanContext()
         }
     }
 
+    this->device.value().destroy();
+
     vkDestroyInstance(this->instance, nullptr);
 }
 

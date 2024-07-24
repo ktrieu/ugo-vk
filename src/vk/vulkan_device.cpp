@@ -14,6 +14,11 @@ VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDeviceInfo& device_in
 	this->create_logical_device();
 }
 
+void VulkanDevice::destroy()
+{
+	vkDestroyDevice(this->logical_device, nullptr);
+}
+
 void VulkanDevice::create_logical_device()
 {
 	VkDeviceCreateInfo info = {};

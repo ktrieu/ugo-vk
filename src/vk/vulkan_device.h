@@ -13,6 +13,7 @@ class VulkanDevice
 {
 public:
     VulkanDevice(VulkanContext &context, PhysicalDeviceInfo& device_info);
+    void destroy();
 
 private:
     void create_logical_device();
