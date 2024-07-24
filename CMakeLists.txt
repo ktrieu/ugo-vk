@@ -26,6 +26,8 @@ add_executable(ugo-vk-bin
     src/vk/vulkan_device.cpp
     src/vk/vulkan_error.h
     src/vk/vulkan_error.cpp
+    src/vk/physical_device.h
+    src/vk/physical_device.cpp
 )
 
 target_link_libraries(ugo-vk-bin glfw)

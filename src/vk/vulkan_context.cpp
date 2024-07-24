@@ -145,24 +145,26 @@ VulkanDevice VulkanContext::select_physical_device()
 
     for (int i = 0; i < num_available; i++)
     {
-        PhysicalDeviceInfo& device_info = device_infos.emplace_back(available[i]);
+        PhysicalDeviceInfo device_info(available[i]);
+
         log("Device {}: {}", i, device_info.properties.properties.deviceName);
-        for (int queue_idx = 0; queue_idx < device_info.queue_families.size(); queue_idx++) {
-            VkQueueFamilyProperties2 queue_properties = device_info.queue_families[queue_idx];
-            fmt::println("Queue {}: {} queues", queue_idx, queue_properties.queueFamilyProperties.queueCount);
-            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                log("- Graphics");
-            }
-            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) {
-                log("- Transfer");
-            }
-            if (queue_properties.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                log("- Compute");
-            }
+        if (device_info.is_usable())
+        {
+            device_infos.push_back(device_info);
+        }
+        else {
+            log("Rejected device.");
         }
     }
 
+    if (device_infos.size() == 0)
+    {
+        throw std::runtime_error("No usable physical devices found.");
+    }
+
+
     // Just return the first one for now.
+    log("Selected device {}: {}", 0, device_infos[0].properties.properties.deviceName);
     return VulkanDevice(*this, device_infos[0]);
 }
 

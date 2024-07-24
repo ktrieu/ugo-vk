@@ -5,16 +5,9 @@
 #include <vector>
 #include <optional>
 
+#include "physical_device.h"
+
 class VulkanContext;
-
-struct PhysicalDeviceInfo {
-    VkPhysicalDevice device;
-    VkPhysicalDeviceProperties2 properties;
-    VkPhysicalDeviceFeatures2 features;
-    std::vector<VkQueueFamilyProperties2> queue_families;
-
-    PhysicalDeviceInfo(VkPhysicalDevice device);
-};
 
 class VulkanDevice
 {
