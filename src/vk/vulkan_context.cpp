@@ -9,7 +9,7 @@
 #include <fmt/core.h>
 
 #include "vulkan_error.h"
-#include "../logger.h"
+#include "logger.h"
 
 VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
 {

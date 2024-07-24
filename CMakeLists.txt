@@ -30,6 +30,8 @@ add_executable(ugo-vk-bin
     src/vk/physical_device.cpp
 )
 
+target_include_directories(ugo-vk-bin PRIVATE src)
+
 target_link_libraries(ugo-vk-bin glfw)
 target_link_libraries(ugo-vk-bin Vulkan::Vulkan)
 target_link_libraries(ugo-vk-bin fmt::fmt)

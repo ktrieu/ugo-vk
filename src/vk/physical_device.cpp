@@ -1,6 +1,6 @@
 #include "physical_device.h"
 
-#include "../logger.h"
+#include "logger.h"
 #include "vulkan_error.h"
 
 PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device) : device(device)
