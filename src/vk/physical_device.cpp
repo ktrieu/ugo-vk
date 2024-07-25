@@ -3,8 +3,9 @@
 #include "logger.h"
 #include "vulkan_error.h"
 
-const std::vector<const char*> PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+const std::vector<const char *> PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	"VK_KHR_portability_subset"
 };
 
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
@@ -53,9 +54,8 @@ bool PhysicalDevice::is_usable()
 
 	for (auto required_ext : PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS)
 	{
-		auto result = std::find_if(this->extensions.begin(), this->extensions.end(), [required_ext](VkExtensionProperties ext) {
-			return std::strcmp(ext.extensionName, required_ext) == 0;
-			});
+		auto result = std::find_if(this->extensions.begin(), this->extensions.end(), [required_ext](VkExtensionProperties ext)
+								   { return std::strcmp(ext.extensionName, required_ext) == 0; });
 
 		if (result == this->extensions.end())
 		{
@@ -87,7 +87,7 @@ std::optional<uint32_t> PhysicalDevice::get_transfer_family()
 	// We want a family that isn't the same as the graphics family, preferably.
 	auto graphics_family = this->get_graphics_family();
 
-	for (auto& idx : this->transfer_families)
+	for (auto &idx : this->transfer_families)
 	{
 		if (graphics_family.has_value() && idx != graphics_family.value())
 		{
