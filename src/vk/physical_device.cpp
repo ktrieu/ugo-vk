@@ -5,8 +5,7 @@
 
 const std::vector<const char *> PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-	"VK_KHR_portability_subset"
-};
+	"VK_KHR_portability_subset"};
 
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
 {
@@ -34,6 +33,30 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : 
 	result = vkEnumerateDeviceExtensionProperties(device, nullptr, &num_extensions, this->extensions.data());
 	vk_check(result);
 
+	VkPhysicalDeviceSurfaceInfo2KHR surface_info = {};
+	surface_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+	surface_info.surface = surface;
+
+	this->surface_caps = {};
+	this->surface_caps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
+	result = vkGetPhysicalDeviceSurfaceCapabilities2KHR(this->device, &surface_info, &this->surface_caps);
+	vk_check(result);
+
+	uint32_t num_formats;
+	result = vkGetPhysicalDeviceSurfaceFormats2KHR(this->device, &surface_info, &num_formats, nullptr);
+	vk_check(result);
+
+	this->surface_formats.resize(num_formats);
+	result = vkGetPhysicalDeviceSurfaceFormats2KHR(this->device, &surface_info, &num_formats, this->surface_formats.data());
+	vk_check(result);
+
+	uint32_t num_modes;
+	result = vkGetPhysicalDeviceSurfacePresentModesKHR(this->device, surface, &num_modes, nullptr);
+	vk_check(result);
+
+	this->present_modes.resize(num_modes);
+	result = vkGetPhysicalDeviceSurfacePresentModesKHR(this->device, surface, &num_modes, this->present_modes.data());
+
 	this->graphics_families = get_queue_families_for_type(VK_QUEUE_GRAPHICS_BIT);
 	this->transfer_families = get_queue_families_for_type(VK_QUEUE_TRANSFER_BIT);
 
@@ -48,6 +71,11 @@ bool PhysicalDevice::is_usable()
 	}
 
 	if (!this->get_present_family().has_value())
+	{
+		return false;
+	}
+
+	if (this->surface_formats.size() == 0 || this->present_modes.size() == 0)
 	{
 		return false;
 	}

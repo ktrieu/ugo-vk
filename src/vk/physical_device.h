@@ -6,7 +6,8 @@
 #include <string_view>
 #include <optional>
 
-class PhysicalDevice {
+class PhysicalDevice
+{
 public:
     PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool is_usable();
@@ -18,7 +19,7 @@ public:
     std::optional<uint32_t> get_transfer_family();
     std::optional<uint32_t> get_present_family();
 
-    static const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS;
+    static const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS;
 
 private:
     VkPhysicalDevice device;
@@ -30,6 +31,10 @@ private:
     std::vector<uint32_t> graphics_families;
     std::vector<uint32_t> transfer_families;
     std::vector<uint32_t> present_families;
+
+    VkSurfaceCapabilities2KHR surface_caps;
+    std::vector<VkSurfaceFormat2KHR> surface_formats;
+    std::vector<VkPresentModeKHR> present_modes;
 
     std::vector<uint32_t> get_queue_families_for_type(VkQueueFlags ty);
     std::vector<uint32_t> get_present_families(VkSurfaceKHR surface);
