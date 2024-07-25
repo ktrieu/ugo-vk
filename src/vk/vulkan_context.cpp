@@ -153,11 +153,11 @@ VulkanDevice VulkanContext::select_physical_device()
     result = vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
     vk_check(result);
 
-    std::vector<PhysicalDeviceInfo> device_infos;
+    std::vector<PhysicalDevice> device_infos;
 
     for (int i = 0; i < num_available; i++)
     {
-        PhysicalDeviceInfo device_info(available[i], this->surface);
+        PhysicalDevice device_info(available[i], this->surface);
 
         log("Device {}: {}", i, device_info.get_name());
         if (device_info.is_usable())

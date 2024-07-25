@@ -12,7 +12,7 @@ class VulkanContext;
 class VulkanDevice
 {
 public:
-    VulkanDevice(VulkanContext &context, PhysicalDeviceInfo& device_info);
+    VulkanDevice(VulkanContext &context, PhysicalDevice& device_info);
     void destroy();
 
 private:
@@ -20,7 +20,7 @@ private:
 
     VulkanContext &context;
     VkDevice logical_device;
-    PhysicalDeviceInfo physical_device_info;
+    PhysicalDevice physical_device_info;
 
     VkQueue graphics_queue;
     VkQueue transfer_queue;

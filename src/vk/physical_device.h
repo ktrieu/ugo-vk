@@ -6,9 +6,9 @@
 #include <string_view>
 #include <optional>
 
-class PhysicalDeviceInfo {
+class PhysicalDevice {
 public:
-    PhysicalDeviceInfo(VkPhysicalDevice device, VkSurfaceKHR surface);
+    PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool is_usable();
 
     std::string_view get_name();

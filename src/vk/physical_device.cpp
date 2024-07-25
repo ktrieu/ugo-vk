@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "vulkan_error.h"
 
-PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
 {
 	this->properties = {};
 	this->properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -39,7 +39,7 @@ const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-bool PhysicalDeviceInfo::is_usable()
+bool PhysicalDevice::is_usable()
 {
 	if (!this->get_graphics_family().has_value())
 	{
@@ -67,12 +67,12 @@ bool PhysicalDeviceInfo::is_usable()
 	return true;
 }
 
-std::string_view PhysicalDeviceInfo::get_name()
+std::string_view PhysicalDevice::get_name()
 {
 	return this->properties.properties.deviceName;
 }
 
-std::optional<uint32_t> PhysicalDeviceInfo::get_graphics_family()
+std::optional<uint32_t> PhysicalDevice::get_graphics_family()
 {
 	if (this->graphics_families.size() == 0)
 	{
@@ -82,7 +82,7 @@ std::optional<uint32_t> PhysicalDeviceInfo::get_graphics_family()
 	return this->graphics_families[0];
 }
 
-std::optional<uint32_t> PhysicalDeviceInfo::get_transfer_family()
+std::optional<uint32_t> PhysicalDevice::get_transfer_family()
 {
 	// We want a family that isn't the same as the graphics family, preferably.
 	auto graphics_family = this->get_graphics_family();
@@ -99,7 +99,7 @@ std::optional<uint32_t> PhysicalDeviceInfo::get_transfer_family()
 	return graphics_family;
 }
 
-std::optional<uint32_t> PhysicalDeviceInfo::get_present_family()
+std::optional<uint32_t> PhysicalDevice::get_present_family()
 {
 	if (this->get_graphics_family().has_value())
 	{
@@ -120,7 +120,7 @@ std::optional<uint32_t> PhysicalDeviceInfo::get_present_family()
 	return std::nullopt;
 }
 
-std::vector<uint32_t> PhysicalDeviceInfo::get_queue_families_for_type(VkQueueFlags ty)
+std::vector<uint32_t> PhysicalDevice::get_queue_families_for_type(VkQueueFlags ty)
 {
 	std::vector<uint32_t> families;
 	for (int i = 0; i < this->queue_families.size(); i++)
@@ -134,7 +134,7 @@ std::vector<uint32_t> PhysicalDeviceInfo::get_queue_families_for_type(VkQueueFla
 	return families;
 }
 
-std::vector<uint32_t> PhysicalDeviceInfo::get_present_families(VkSurfaceKHR surface)
+std::vector<uint32_t> PhysicalDevice::get_present_families(VkSurfaceKHR surface)
 {
 	std::vector<uint32_t> families;
 	for (int i = 0; i < this->queue_families.size(); i++)

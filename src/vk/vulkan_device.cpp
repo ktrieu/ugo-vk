@@ -10,7 +10,7 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDeviceInfo& device_info) : context(context), physical_device_info(device_info)
+VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice& device_info) : context(context), physical_device_info(device_info)
 {
 	this->create_logical_device();
 }
