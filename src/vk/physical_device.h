@@ -18,6 +18,8 @@ public:
     std::optional<uint32_t> get_transfer_family();
     std::optional<uint32_t> get_present_family();
 
+    static const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS;
+
 private:
     VkPhysicalDevice device;
     VkPhysicalDeviceProperties2 properties;

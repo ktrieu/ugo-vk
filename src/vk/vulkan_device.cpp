@@ -30,6 +30,9 @@ void VulkanDevice::create_logical_device()
 	device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	info.pEnabledFeatures = &device_features.features;
 
+	info.enabledExtensionCount = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.size();
+	info.ppEnabledExtensionNames = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.data();
+
 	std::optional<uint32_t> graphics_family_idx = this->physical_device_info.get_graphics_family();
 	if (!graphics_family_idx.has_value())
 	{

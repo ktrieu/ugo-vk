@@ -3,6 +3,10 @@
 #include "logger.h"
 #include "vulkan_error.h"
 
+const std::vector<const char*> PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
 {
 	this->properties = {};
@@ -35,10 +39,6 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : 
 	this->present_families = get_present_families(surface);
 }
 
-const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
 bool PhysicalDevice::is_usable()
 {
 	if (!this->get_graphics_family().has_value())
@@ -51,7 +51,7 @@ bool PhysicalDevice::is_usable()
 		return false;
 	}
 
-	for (auto required_ext : REQUIRED_DEVICE_EXTENSIONS)
+	for (auto required_ext : PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS)
 	{
 		auto result = std::find_if(this->extensions.begin(), this->extensions.end(), [required_ext](VkExtensionProperties ext) {
 			return std::strcmp(ext.extensionName, required_ext) == 0;
