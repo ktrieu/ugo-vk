@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "vulkan_error.h"
 
-PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device) : device(device)
+PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device, VkSurfaceKHR surface) : device(device)
 {
 	this->properties = {};
 	this->properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -30,6 +30,8 @@ PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device) : device(device)
 	vk_check(result);
 
 	this->graphics_families = get_queue_families_for_type(VK_QUEUE_GRAPHICS_BIT);
+
+	this->present_families = get_present_families(surface);
 }
 
 const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
@@ -38,10 +40,13 @@ const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
 
 bool PhysicalDeviceInfo::is_usable()
 {
-	auto graphics_families = this->get_queue_families_for_type(VK_QUEUE_GRAPHICS_BIT);
-	if (graphics_families.size() == 0)
+	if (!this->get_graphics_family().has_value())
 	{
-		log("No graphics queue found.");
+		return false;
+	}
+
+	if (!this->get_present_family().has_value())
+	{
 		return false;
 	}
 
@@ -76,12 +81,51 @@ std::optional<uint32_t> PhysicalDeviceInfo::get_graphics_family()
 	return this->graphics_families[0];
 }
 
+std::optional<uint32_t> PhysicalDeviceInfo::get_present_family()
+{
+	if (this->get_graphics_family().has_value())
+	{
+		// We'd like the present and graphics family to be the same.
+		auto result = std::find(this->present_families.begin(), this->present_families.end(), this->get_graphics_family().value());
+		if (result != this->present_families.end())
+		{
+			return *result;
+		}
+	}
+
+	// But if not, just return whatever we have.
+	if (this->present_families.size() != 0)
+	{
+		return this->present_families[0];
+	}
+
+	return std::nullopt;
+}
+
 std::vector<uint32_t> PhysicalDeviceInfo::get_queue_families_for_type(VkQueueFlags ty)
 {
 	std::vector<uint32_t> families;
 	for (int i = 0; i < this->queue_families.size(); i++)
 	{
 		if ((this->queue_families[i].queueFamilyProperties.queueFlags & ty) != 0)
+		{
+			families.push_back(i);
+		}
+	}
+
+	return families;
+}
+
+std::vector<uint32_t> PhysicalDeviceInfo::get_present_families(VkSurfaceKHR surface)
+{
+	std::vector<uint32_t> families;
+	for (int i = 0; i < this->queue_families.size(); i++)
+	{
+		VkBool32 supported;
+		auto result = vkGetPhysicalDeviceSurfaceSupportKHR(this->device, i, surface, &supported);
+		vk_check(result);
+
+		if (supported)
 		{
 			families.push_back(i);
 		}

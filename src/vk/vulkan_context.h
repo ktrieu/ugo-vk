@@ -7,16 +7,21 @@
 #include <optional>
 
 #include "vulkan_device.h"
+
+class Window;
+
 class VulkanContext
 {
 public:
-    VulkanContext(std::string_view app_name);
+    VulkanContext(std::string_view app_name, Window& window);
     ~VulkanContext();
 
 private:
     std::vector<const char *> get_required_extensions();
     std::vector<const char *> get_validation_layers();
     void create_instance();
+
+    void create_surface(Window& window);
 
     VulkanDevice select_physical_device();
 
@@ -30,6 +35,8 @@ private:
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debug_messenger;
+
+    VkSurfaceKHR surface;
 
     std::optional<VulkanDevice> device;
 

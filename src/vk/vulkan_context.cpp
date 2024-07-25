@@ -8,12 +8,14 @@
 #include <GLFW/glfw3.h>
 #include <fmt/core.h>
 
+#include "window/window.h"
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanContext::VulkanContext(std::string_view app_name) : app_name(app_name)
+VulkanContext::VulkanContext(std::string_view app_name, Window& window) : app_name(app_name)
 {
     this->create_instance();
+    this->create_surface(window);
     this->device.emplace(this->select_physical_device());
 }
 
@@ -34,6 +36,8 @@ VulkanContext::~VulkanContext()
     }
 
     this->device.value().destroy();
+
+    vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
 
     vkDestroyInstance(this->instance, nullptr);
 }
@@ -133,6 +137,12 @@ void VulkanContext::create_instance()
     }
 }
 
+void VulkanContext::create_surface(Window& window)
+{
+    auto result = glfwCreateWindowSurface(this->instance, window.get_window(), nullptr, &this->surface);
+    vk_check(result);
+}
+
 VulkanDevice VulkanContext::select_physical_device()
 {
     uint32_t num_available;
@@ -147,7 +157,7 @@ VulkanDevice VulkanContext::select_physical_device()
 
     for (int i = 0; i < num_available; i++)
     {
-        PhysicalDeviceInfo device_info(available[i]);
+        PhysicalDeviceInfo device_info(available[i], this->surface);
 
         log("Device {}: {}", i, device_info.get_name());
         if (device_info.is_usable())

@@ -8,13 +8,14 @@
 
 class PhysicalDeviceInfo {
 public:
-    PhysicalDeviceInfo(VkPhysicalDevice device);
+    PhysicalDeviceInfo(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool is_usable();
 
     std::string_view get_name();
     VkPhysicalDevice get_device() { return this->device; }
 
     std::optional<uint32_t> get_graphics_family();
+    std::optional<uint32_t> get_present_family();
 
 private:
     VkPhysicalDevice device;
@@ -25,6 +26,8 @@ private:
 
     std::vector<uint32_t> graphics_families;
     std::vector<uint32_t> transfer_families;
+    std::vector<uint32_t> present_families;
 
     std::vector<uint32_t> get_queue_families_for_type(VkQueueFlags ty);
+    std::vector<uint32_t> get_present_families(VkSurfaceKHR surface);
 };
