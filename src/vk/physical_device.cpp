@@ -28,20 +28,8 @@ PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device) : device(device)
 	this->extensions.resize(num_extensions);
 	result = vkEnumerateDeviceExtensionProperties(device, nullptr, &num_extensions, this->extensions.data());
 	vk_check(result);
-}
 
-std::vector<uint32_t> PhysicalDeviceInfo::get_queue_families_for_type(VkQueueFlags ty)
-{
-	std::vector<uint32_t> families;
-	for (int i = 0; i < this->queue_families.size(); i++)
-	{
-		if ((this->queue_families[i].queueFamilyProperties.queueFlags & ty) != 0)
-		{
-			families.push_back(i);
-		}
-	}
-
-	return families;
+	this->graphics_families = get_queue_families_for_type(VK_QUEUE_GRAPHICS_BIT);
 }
 
 const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
@@ -71,4 +59,33 @@ bool PhysicalDeviceInfo::is_usable()
 	}
 
 	return true;
+}
+
+std::string_view PhysicalDeviceInfo::get_name()
+{
+	return this->properties.properties.deviceName;
+}
+
+std::optional<uint32_t> PhysicalDeviceInfo::get_graphics_family()
+{
+	if (this->graphics_families.size() == 0)
+	{
+		return std::nullopt;
+	}
+
+	return this->graphics_families[0];
+}
+
+std::vector<uint32_t> PhysicalDeviceInfo::get_queue_families_for_type(VkQueueFlags ty)
+{
+	std::vector<uint32_t> families;
+	for (int i = 0; i < this->queue_families.size(); i++)
+	{
+		if ((this->queue_families[i].queueFamilyProperties.queueFlags & ty) != 0)
+		{
+			families.push_back(i);
+		}
+	}
+
+	return families;
 }

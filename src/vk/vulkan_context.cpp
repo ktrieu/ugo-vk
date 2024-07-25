@@ -149,7 +149,7 @@ VulkanDevice VulkanContext::select_physical_device()
     {
         PhysicalDeviceInfo device_info(available[i]);
 
-        log("Device {}: {}", i, device_info.properties.properties.deviceName);
+        log("Device {}: {}", i, device_info.get_name());
         if (device_info.is_usable())
         {
             device_infos.push_back(device_info);
@@ -166,7 +166,7 @@ VulkanDevice VulkanContext::select_physical_device()
 
 
     // Just return the first one for now.
-    log("Selected device {}: {}", 0, device_infos[0].properties.properties.deviceName);
+    log("Selected device {}: {}", 0, device_infos[0].get_name());
     return VulkanDevice(*this, device_infos[0]);
 }
 

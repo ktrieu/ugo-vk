@@ -3,17 +3,28 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <string_view>
+#include <optional>
 
-struct PhysicalDeviceInfo {
+class PhysicalDeviceInfo {
+public:
+    PhysicalDeviceInfo(VkPhysicalDevice device);
+    bool is_usable();
+
+    std::string_view get_name();
+    VkPhysicalDevice get_device() { return this->device; }
+
+    std::optional<uint32_t> get_graphics_family();
+
+private:
     VkPhysicalDevice device;
     VkPhysicalDeviceProperties2 properties;
     VkPhysicalDeviceFeatures2 features;
     std::vector<VkExtensionProperties> extensions;
     std::vector<VkQueueFamilyProperties2> queue_families;
 
-    PhysicalDeviceInfo(VkPhysicalDevice device);
+    std::vector<uint32_t> graphics_families;
+    std::vector<uint32_t> transfer_families;
 
     std::vector<uint32_t> get_queue_families_for_type(VkQueueFlags ty);
-
-    bool is_usable();
 };

@@ -29,16 +29,7 @@ void VulkanDevice::create_logical_device()
 	device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	info.pEnabledFeatures = &device_features.features;
 
-	std::optional<uint32_t> graphics_family_idx;
-	auto& families = this->physical_device_info.queue_families;
-	for (int i = 0; i < families.size(); i++) 
-	{
-		auto& f = families[i];
-		if ((f.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
-		{
-			graphics_family_idx = i;
-		}
-	}
+	std::optional<uint32_t> graphics_family_idx = this->physical_device_info.get_graphics_family();
 
 	if (!graphics_family_idx.has_value())
 	{
@@ -55,7 +46,7 @@ void VulkanDevice::create_logical_device()
 	info.queueCreateInfoCount = 1;
 	info.pQueueCreateInfos = &queue_create_info;
 
-	VkResult result = vkCreateDevice(this->physical_device_info.device, &info, nullptr, &this->logical_device);
+	VkResult result = vkCreateDevice(this->physical_device_info.get_device(), &info, nullptr, &this->logical_device);
 	vk_check(result);
 
 	VkDeviceQueueInfo2 queue_info = {};
