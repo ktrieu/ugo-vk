@@ -28,6 +28,8 @@ add_executable(ugo-vk-bin
     src/vk/vulkan_error.cpp
     src/vk/physical_device.h
     src/vk/physical_device.cpp
+    src/vk/vulkan_swapchain.h
+    src/vk/vulkan_swapchain.cpp
 )
 
 target_include_directories(ugo-vk-bin PRIVATE src)
