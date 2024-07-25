@@ -42,8 +42,14 @@ void VulkanDevice::create_logical_device()
 		throw std::runtime_error("No present queue family available.");
 	}
 
+	std::optional<uint32_t> transfer_family_idx = this->physical_device_info.get_transfer_family();
+	if (!transfer_family_idx.has_value())
+	{
+		throw std::runtime_error("No transfer family available.");
+	}
+
 	// Queue families may overlap so use a set to distinguish them.
-	std::unordered_set<uint32_t> required_queues = { graphics_family_idx.value(), present_family_idx.value() };
+	std::unordered_set<uint32_t> required_queues = { graphics_family_idx.value(), present_family_idx.value(), transfer_family_idx.value() };
 
 	std::vector<VkDeviceQueueCreateInfo> queue_infos;
 	float priority = 1.0f;
@@ -76,4 +82,10 @@ void VulkanDevice::create_logical_device()
 	present_queue_info.queueFamilyIndex = present_family_idx.value();
 	present_queue_info.queueIndex = 0;
 	vkGetDeviceQueue2(this->logical_device, &present_queue_info, &this->present_queue);
+
+	VkDeviceQueueInfo2 transfer_queue_info = {};
+	transfer_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
+	transfer_queue_info.queueFamilyIndex = transfer_family_idx.value();
+	transfer_queue_info.queueIndex = 0;
+	vkGetDeviceQueue2(this->logical_device, &transfer_queue_info, &this->transfer_queue);
 }

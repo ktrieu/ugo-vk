@@ -15,6 +15,7 @@ public:
     VkPhysicalDevice get_device() { return this->device; }
 
     std::optional<uint32_t> get_graphics_family();
+    std::optional<uint32_t> get_transfer_family();
     std::optional<uint32_t> get_present_family();
 
 private:

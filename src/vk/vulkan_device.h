@@ -23,5 +23,6 @@ private:
     PhysicalDeviceInfo physical_device_info;
 
     VkQueue graphics_queue;
+    VkQueue transfer_queue;
     VkQueue present_queue;
 };

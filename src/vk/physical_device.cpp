@@ -30,6 +30,7 @@ PhysicalDeviceInfo::PhysicalDeviceInfo(VkPhysicalDevice device, VkSurfaceKHR sur
 	vk_check(result);
 
 	this->graphics_families = get_queue_families_for_type(VK_QUEUE_GRAPHICS_BIT);
+	this->transfer_families = get_queue_families_for_type(VK_QUEUE_TRANSFER_BIT);
 
 	this->present_families = get_present_families(surface);
 }
@@ -79,6 +80,23 @@ std::optional<uint32_t> PhysicalDeviceInfo::get_graphics_family()
 	}
 
 	return this->graphics_families[0];
+}
+
+std::optional<uint32_t> PhysicalDeviceInfo::get_transfer_family()
+{
+	// We want a family that isn't the same as the graphics family, preferably.
+	auto graphics_family = this->get_graphics_family();
+
+	for (auto& idx : this->transfer_families)
+	{
+		if (graphics_family.has_value() && idx != graphics_family.value())
+		{
+			return idx;
+		}
+	}
+
+	// If we can't, graphics queues can always accept transfer commands anyway.
+	return graphics_family;
 }
 
 std::optional<uint32_t> PhysicalDeviceInfo::get_present_family()
