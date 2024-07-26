@@ -36,6 +36,7 @@ VulkanContext::~VulkanContext()
         }
     }
 
+    this->swapchain.value().destroy();
     this->device.value().destroy();
 
     vkDestroySurfaceKHR(this->instance, this->surface, nullptr);

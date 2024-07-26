@@ -17,11 +17,13 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
     auto surface_format = this->select_format();
     info.imageFormat = surface_format.format;
     info.imageColorSpace = surface_format.colorSpace;
+    this->surface_format = surface_format.format;
 
     info.presentMode = this->select_present_mode();
     info.clipped = VK_TRUE;
 
-    info.imageExtent = this->choose_swap_extent(window);
+    this->swap_extent = this->choose_swap_extent(window);
+    info.imageExtent = this->swap_extent;
 
     auto caps = this->context.get_device().get_physical_device().get_surface_caps();
     // Request 1 more than the minimum so we don't wait on the driver.
@@ -56,10 +58,19 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
 
     auto result = vkCreateSwapchainKHR(this->context.get_device().get_logical_device(), &info, nullptr, &this->swapchain);
     vk_check(result);
+
+    uint32_t image_count;
+    result = vkGetSwapchainImagesKHR(this->context.get_device().get_logical_device(), this->swapchain, &image_count, nullptr);
+    vk_check(result);
+
+    this->images.resize(image_count);
+    result = vkGetSwapchainImagesKHR(this->context.get_device().get_logical_device(), this->swapchain, &image_count, this->images.data());
+    vk_check(result);
 }
 
 void VulkanSwapchain::destroy()
 {
+    vkDestroySwapchainKHR(this->context.get_device().get_logical_device(), this->swapchain, nullptr);
 }
 
 VkSurfaceFormatKHR VulkanSwapchain::select_format()

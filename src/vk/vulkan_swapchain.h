@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <vector>
+
 class Window;
 class VulkanContext;
 
@@ -17,6 +19,10 @@ private:
 
 	VkSwapchainKHR swapchain;
 	bool image_sharing_required;
+
+	std::vector<VkImage> images;
+	VkFormat surface_format;
+	VkExtent2D swap_extent;
 
 	VkSurfaceFormatKHR select_format();
 	VkPresentModeKHR select_present_mode();
