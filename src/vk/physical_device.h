@@ -19,9 +19,9 @@ public:
     std::optional<uint32_t> get_transfer_family();
     std::optional<uint32_t> get_present_family();
 
-    std::vector<VkSurfaceFormat2KHR> &get_surface_formats() { return this->surface_formats; }
+    std::vector<VkSurfaceFormatKHR> &get_surface_formats() { return this->surface_formats; }
     std::vector<VkPresentModeKHR> &get_present_modes() { return this->present_modes; }
-    VkSurfaceCapabilities2KHR &get_surface_caps() { return this->surface_caps; }
+    VkSurfaceCapabilitiesKHR &get_surface_caps() { return this->surface_caps; }
 
     static const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS;
 
@@ -36,8 +36,8 @@ private:
     std::vector<uint32_t> transfer_families;
     std::vector<uint32_t> present_families;
 
-    VkSurfaceCapabilities2KHR surface_caps;
-    std::vector<VkSurfaceFormat2KHR> surface_formats;
+    VkSurfaceCapabilitiesKHR surface_caps;
+    std::vector<VkSurfaceFormatKHR> surface_formats;
     std::vector<VkPresentModeKHR> present_modes;
 
     std::vector<uint32_t> get_queue_families_for_type(VkQueueFlags ty);

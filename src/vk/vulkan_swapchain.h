@@ -18,7 +18,7 @@ private:
 	VkSwapchainKHR swapchain;
 	bool image_sharing_required;
 
-	VkSurfaceFormat2KHR select_format();
+	VkSurfaceFormatKHR select_format();
 	VkPresentModeKHR select_present_mode();
 	VkExtent2D choose_swap_extent(Window &window);
 };

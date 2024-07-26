@@ -38,16 +38,15 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) : 
 	surface_info.surface = surface;
 
 	this->surface_caps = {};
-	this->surface_caps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
-	result = vkGetPhysicalDeviceSurfaceCapabilities2KHR(this->device, &surface_info, &this->surface_caps);
+	result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->device, surface, &this->surface_caps);
 	vk_check(result);
 
 	uint32_t num_formats;
-	result = vkGetPhysicalDeviceSurfaceFormats2KHR(this->device, &surface_info, &num_formats, nullptr);
+	result = vkGetPhysicalDeviceSurfaceFormatsKHR(this->device, surface, &num_formats, nullptr);
 	vk_check(result);
 
 	this->surface_formats.resize(num_formats);
-	result = vkGetPhysicalDeviceSurfaceFormats2KHR(this->device, &surface_info, &num_formats, this->surface_formats.data());
+	result = vkGetPhysicalDeviceSurfaceFormatsKHR(this->device, surface, &num_formats, this->surface_formats.data());
 	vk_check(result);
 
 	uint32_t num_modes;

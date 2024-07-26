@@ -14,7 +14,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     info.surface = context.get_surface();
 
-    auto surface_format = this->select_format().surfaceFormat;
+    auto surface_format = this->select_format();
     info.imageFormat = surface_format.format;
     info.imageColorSpace = surface_format.colorSpace;
 
@@ -23,7 +23,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
 
     info.imageExtent = this->choose_swap_extent(window);
 
-    auto caps = this->context.get_device().get_physical_device().get_surface_caps().surfaceCapabilities;
+    auto caps = this->context.get_device().get_physical_device().get_surface_caps();
     // Request 1 more than the minimum so we don't wait on the driver.
     info.minImageCount = caps.minImageCount + 1;
     // Unless that's more than is supported. 0 means there is no maximum, so we can skip the check
@@ -62,14 +62,14 @@ void VulkanSwapchain::destroy()
 {
 }
 
-VkSurfaceFormat2KHR VulkanSwapchain::select_format()
+VkSurfaceFormatKHR VulkanSwapchain::select_format()
 {
     auto formats = this->context.get_device().get_physical_device().get_surface_formats();
 
     // Pick a preferred format, or just default to the first one, whatever that is.
     for (auto &f : formats)
     {
-        if (f.surfaceFormat.format == VK_FORMAT_B8G8R8_SRGB && f.surfaceFormat.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR)
+        if (f.format == VK_FORMAT_B8G8R8_SRGB && f.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR)
         {
             return f;
         }
@@ -97,7 +97,7 @@ VkPresentModeKHR VulkanSwapchain::select_present_mode()
 
 VkExtent2D VulkanSwapchain::choose_swap_extent(Window &window)
 {
-    auto caps = this->context.get_device().get_physical_device().get_surface_caps().surfaceCapabilities;
+    auto caps = this->context.get_device().get_physical_device().get_surface_caps();
 
     // If the current extent's width is the max, we get to pick the swap extent.
     if (caps.currentExtent.width == std::numeric_limits<uint32_t>::max())
