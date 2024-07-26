@@ -12,11 +12,12 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanContext::VulkanContext(std::string_view app_name, Window& window) : app_name(app_name)
+VulkanContext::VulkanContext(std::string_view app_name, Window &window) : app_name(app_name)
 {
     this->create_instance();
     this->create_surface(window);
     this->device.emplace(this->select_physical_device());
+    this->swapchain.emplace(*this, window);
 }
 
 VulkanContext::~VulkanContext()
@@ -137,7 +138,7 @@ void VulkanContext::create_instance()
     }
 }
 
-void VulkanContext::create_surface(Window& window)
+void VulkanContext::create_surface(Window &window)
 {
     auto result = glfwCreateWindowSurface(this->instance, window.get_window(), nullptr, &this->surface);
     vk_check(result);
@@ -164,7 +165,8 @@ VulkanDevice VulkanContext::select_physical_device()
         {
             device_infos.push_back(device_info);
         }
-        else {
+        else
+        {
             log("Rejected device.");
         }
     }
@@ -173,7 +175,6 @@ VulkanDevice VulkanContext::select_physical_device()
     {
         throw std::runtime_error("No usable physical devices found.");
     }
-
 
     // Just return the first one for now.
     log("Selected device {}: {}", 0, device_infos[0].get_name());
@@ -209,4 +210,15 @@ void VulkanContext::create_debug_messenger()
 
     VkResult result = create_func(this->instance, &info, nullptr, &this->debug_messenger);
     vk_check(result);
+}
+
+VulkanDevice &VulkanContext::get_device()
+{
+    // This should never happen since we initialize the device in the constructor.
+    if (!this->device.has_value())
+    {
+        throw std::runtime_error("Vulkan device not initialized!");
+    }
+
+    return this->device.value();
 }

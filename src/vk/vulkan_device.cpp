@@ -10,7 +10,7 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice& device_info) : context(context), physical_device_info(device_info)
+VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice &device_info) : context(context), physical_device_info(device_info)
 {
 	this->create_logical_device();
 }
@@ -24,7 +24,7 @@ void VulkanDevice::create_logical_device()
 {
 	VkDeviceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	
+
 	// We don't really care about features for now.
 	VkPhysicalDeviceFeatures2 device_features = {};
 	device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -38,21 +38,24 @@ void VulkanDevice::create_logical_device()
 	{
 		throw std::runtime_error("No graphics queue family available.");
 	}
+	this->graphics_family = graphics_family_idx.value();
 
 	std::optional<uint32_t> present_family_idx = this->physical_device_info.get_present_family();
 	if (!present_family_idx.has_value())
 	{
 		throw std::runtime_error("No present queue family available.");
 	}
+	this->present_family = present_family_idx.value();
 
 	std::optional<uint32_t> transfer_family_idx = this->physical_device_info.get_transfer_family();
 	if (!transfer_family_idx.has_value())
 	{
 		throw std::runtime_error("No transfer family available.");
 	}
+	this->transfer_family = transfer_family_idx.value();
 
 	// Queue families may overlap so use a set to distinguish them.
-	std::unordered_set<uint32_t> required_queues = { graphics_family_idx.value(), present_family_idx.value(), transfer_family_idx.value() };
+	std::unordered_set<uint32_t> required_queues = {this->graphics_family, this->transfer_family, this->present_family};
 
 	std::vector<VkDeviceQueueCreateInfo> queue_infos;
 	float priority = 1.0f;
@@ -67,7 +70,7 @@ void VulkanDevice::create_logical_device()
 
 		queue_infos.push_back(queue_create_info);
 	}
-	
+
 	info.queueCreateInfoCount = queue_infos.size();
 	info.pQueueCreateInfos = queue_infos.data();
 
@@ -76,19 +79,19 @@ void VulkanDevice::create_logical_device()
 
 	VkDeviceQueueInfo2 graphics_queue_info = {};
 	graphics_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	graphics_queue_info.queueFamilyIndex = graphics_family_idx.value();
+	graphics_queue_info.queueFamilyIndex = this->graphics_family;
 	graphics_queue_info.queueIndex = 0;
 	vkGetDeviceQueue2(this->logical_device, &graphics_queue_info, &this->graphics_queue);
 
 	VkDeviceQueueInfo2 present_queue_info = {};
 	present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	present_queue_info.queueFamilyIndex = present_family_idx.value();
+	present_queue_info.queueFamilyIndex = this->present_family;
 	present_queue_info.queueIndex = 0;
 	vkGetDeviceQueue2(this->logical_device, &present_queue_info, &this->present_queue);
 
 	VkDeviceQueueInfo2 transfer_queue_info = {};
 	transfer_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	transfer_queue_info.queueFamilyIndex = transfer_family_idx.value();
+	transfer_queue_info.queueFamilyIndex = this->transfer_family;
 	transfer_queue_info.queueIndex = 0;
 	vkGetDeviceQueue2(this->logical_device, &transfer_queue_info, &this->transfer_queue);
 }

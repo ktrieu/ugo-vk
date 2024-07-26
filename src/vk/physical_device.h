@@ -19,6 +19,10 @@ public:
     std::optional<uint32_t> get_transfer_family();
     std::optional<uint32_t> get_present_family();
 
+    std::vector<VkSurfaceFormat2KHR> &get_surface_formats() { return this->surface_formats; }
+    std::vector<VkPresentModeKHR> &get_present_modes() { return this->present_modes; }
+    VkSurfaceCapabilities2KHR &get_surface_caps() { return this->surface_caps; }
+
     static const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS;
 
 private:
