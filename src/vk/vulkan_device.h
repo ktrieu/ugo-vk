@@ -16,7 +16,7 @@ public:
     void destroy();
 
     PhysicalDevice &get_physical_device() { return this->physical_device_info; }
-    VkDevice get_logical_device() { return this->logical_device; }
+    VkDevice get_device() { return this->logical_device; }
 
     uint32_t get_graphics_family() { return this->graphics_family; }
     uint32_t get_transfer_family() { return this->transfer_family; }

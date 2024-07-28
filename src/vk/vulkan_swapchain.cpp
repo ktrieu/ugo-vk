@@ -56,15 +56,15 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
     info.imageArrayLayers = 1;
     info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    auto result = vkCreateSwapchainKHR(this->context.get_device().get_logical_device(), &info, nullptr, &this->swapchain);
+    auto result = vkCreateSwapchainKHR(this->context.get_device().get_device(), &info, nullptr, &this->swapchain);
     vk_check(result);
 
     uint32_t image_count;
-    result = vkGetSwapchainImagesKHR(this->context.get_device().get_logical_device(), this->swapchain, &image_count, nullptr);
+    result = vkGetSwapchainImagesKHR(this->context.get_device().get_device(), this->swapchain, &image_count, nullptr);
     vk_check(result);
 
     this->images.resize(image_count);
-    result = vkGetSwapchainImagesKHR(this->context.get_device().get_logical_device(), this->swapchain, &image_count, this->images.data());
+    result = vkGetSwapchainImagesKHR(this->context.get_device().get_device(), this->swapchain, &image_count, this->images.data());
     vk_check(result);
 
     this->image_views.resize(image_count);
@@ -78,10 +78,10 @@ void VulkanSwapchain::destroy()
 {
     for (auto view : this->image_views)
     {
-        vkDestroyImageView(this->context.get_device().get_logical_device(), view, nullptr);
+        vkDestroyImageView(this->context.get_device().get_device(), view, nullptr);
     }
 
-    vkDestroySwapchainKHR(this->context.get_device().get_logical_device(), this->swapchain, nullptr);
+    vkDestroySwapchainKHR(this->context.get_device().get_device(), this->swapchain, nullptr);
 }
 
 VkSurfaceFormatKHR VulkanSwapchain::select_format()
@@ -162,7 +162,7 @@ VkImageView VulkanSwapchain::create_image_view(VkImage image)
     info.subresourceRange.layerCount = 1;
 
     VkImageView view;
-    auto result = vkCreateImageView(this->context.get_device().get_logical_device(), &info, nullptr, &view);
+    auto result = vkCreateImageView(this->context.get_device().get_device(), &info, nullptr, &view);
     vk_check(result);
 
     return view;
