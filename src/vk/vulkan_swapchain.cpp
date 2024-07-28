@@ -66,10 +66,21 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
     this->images.resize(image_count);
     result = vkGetSwapchainImagesKHR(this->context.get_device().get_logical_device(), this->swapchain, &image_count, this->images.data());
     vk_check(result);
+
+    this->image_views.resize(image_count);
+    for (int i = 0; i < image_count; i++)
+    {
+        this->image_views[i] = this->create_image_view(this->images[i]);
+    }
 }
 
 void VulkanSwapchain::destroy()
 {
+    for (auto view : this->image_views)
+    {
+        vkDestroyImageView(this->context.get_device().get_logical_device(), view, nullptr);
+    }
+
     vkDestroySwapchainKHR(this->context.get_device().get_logical_device(), this->swapchain, nullptr);
 }
 
@@ -128,4 +139,31 @@ VkExtent2D VulkanSwapchain::choose_swap_extent(Window &window)
 
     // Otherwise, we just return whatever we're given.
     return caps.currentExtent;
+}
+
+VkImageView VulkanSwapchain::create_image_view(VkImage image)
+{
+    VkImageViewCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    info.image = image;
+
+    info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    info.format = this->surface_format;
+
+    info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    info.subresourceRange.baseMipLevel = 0;
+    info.subresourceRange.levelCount = 1;
+    info.subresourceRange.baseArrayLayer = 0;
+    info.subresourceRange.layerCount = 1;
+
+    VkImageView view;
+    auto result = vkCreateImageView(this->context.get_device().get_logical_device(), &info, nullptr, &view);
+    vk_check(result);
+
+    return view;
 }

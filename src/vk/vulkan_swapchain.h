@@ -23,8 +23,11 @@ private:
 	std::vector<VkImage> images;
 	VkFormat surface_format;
 	VkExtent2D swap_extent;
+	std::vector<VkImageView> image_views;
 
 	VkSurfaceFormatKHR select_format();
 	VkPresentModeKHR select_present_mode();
 	VkExtent2D choose_swap_extent(Window &window);
+
+	VkImageView create_image_view(VkImage image);
 };
