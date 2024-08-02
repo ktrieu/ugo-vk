@@ -62,6 +62,8 @@ add_executable(ugo-vk-bin
     src/vk/physical_device.cpp
     src/vk/vulkan_swapchain.h
     src/vk/vulkan_swapchain.cpp
+    src/vk/pipeline_builder.h
+    src/vk/pipeline_builder.cpp
 )
 
 target_include_directories(ugo-vk-bin PRIVATE src)
