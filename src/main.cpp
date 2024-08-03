@@ -20,7 +20,6 @@ int main(int argc, char **argv)
     {
         Logger::initialize();
         Window window(1080, 720, "ugo-vk");
-        VulkanContext vulkan_context("ugo-vk", window);
 
         window.run();
     }

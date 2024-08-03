@@ -18,6 +18,7 @@ public:
     ~VulkanContext();
 
     VulkanDevice &get_device();
+    VulkanSwapchain& get_swapchain() { return this->swapchain.value(); }
     VkSurfaceKHR get_surface() { return this->surface; }
 
 private:

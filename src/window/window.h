@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <optional>
+
+#include "vk/vulkan_context.h"
 
 struct GLFWwindow;
 
@@ -16,6 +19,7 @@ public:
 
 private:
     GLFWwindow *window = nullptr;
+    std::optional<VulkanContext> context;
 
     int width;
     int height;

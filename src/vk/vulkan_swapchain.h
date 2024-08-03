@@ -11,6 +11,7 @@ class VulkanSwapchain
 {
 public:
 	VulkanSwapchain(VulkanContext &context, Window &window);
+	VkFormat get_surface_format() { return this->surface_format; }
 
 	void destroy();
 
