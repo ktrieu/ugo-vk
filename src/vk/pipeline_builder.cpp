@@ -4,6 +4,9 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <filesystem>
+
+#include <fmt/format.h>
 
 #include "vk/vulkan_device.h"
 #include "vk/vulkan_error.h"
@@ -20,12 +23,16 @@ VkShaderModule create_shader_module(VkDevice device, std::string_view filename)
 	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 
 	std::string filename_owned(filename);
-	std::fstream file(filename_owned, std::ios::ate);
-	std::streampos len = file.tellg();
+	std::fstream file(filename_owned, std::ifstream::ate | std::ifstream::binary | std::ifstream::in);
+	if (!file.good())
+	{
+		throw std::runtime_error(fmt::format("Could not open file {}.", filename));
+	}
 
+	size_t len = static_cast<size_t>(file.tellg());
 	std::vector<char> data(len);
 	file.seekg(0);
-	file.write(data.data(), len);
+	file.read(data.data(), len);
 
 	info.codeSize = len;
 	info.pCode = (uint32_t*)data.data();
@@ -59,6 +66,16 @@ VkPipelineShaderStageCreateInfo create_shader_stage_info(VkShaderModule shader, 
 	return info;
 }
 
+void PipelineBuilder::set_color_format(VkFormat format)
+{
+	_color_format = format;
+}
+
+void PipelineBuilder::set_depth_format(VkFormat format)
+{
+	_depth_format = format;
+}
+
 VkPipeline PipelineBuilder::build()
 {
 	if (_vertex_shader == VK_NULL_HANDLE || _fragment_shader == VK_NULL_HANDLE)
@@ -66,9 +83,9 @@ VkPipeline PipelineBuilder::build()
 		throw std::runtime_error("Vertex and fragment shader must be set.");
 	}
 
-	if (_color_format == VK_FORMAT_UNDEFINED || _depth_format == VK_FORMAT_UNDEFINED)
+	if (_color_format == VK_FORMAT_UNDEFINED)
 	{
-		throw std::runtime_error("Color and depth format must be set.");
+		throw std::runtime_error("Color format must be set.");
 	}
 
 	VkGraphicsPipelineCreateInfo info = {};
@@ -87,6 +104,10 @@ VkPipeline PipelineBuilder::build()
 	viewport_info.scissorCount = 1;
 
 	info.pViewportState = &viewport_info;
+
+	VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
+	vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	info.pVertexInputState = &vertex_input_info;
 
 	VkPipelineColorBlendStateCreateInfo color_blend_info = {};
 	color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -163,10 +184,12 @@ VkPipeline PipelineBuilder::build()
 	info.layout = layout;
 
 	VkPipeline pipeline;
-	auto result = vkCreateGraphicsPipelines(_device.get_device(), VK_NULL_HANDLE, 1, &info, nullptr, &pipeline);
+	result = vkCreateGraphicsPipelines(_device.get_device(), VK_NULL_HANDLE, 1, &info, nullptr, &pipeline);
 	vk_check(result);
 
 	// We don't need the attached shaders anymore after the pipeline has been created.
 	vkDestroyShaderModule(_device.get_device(), _vertex_shader, nullptr);
 	vkDestroyShaderModule(_device.get_device(), _fragment_shader, nullptr);
+
+	return pipeline;
 }
