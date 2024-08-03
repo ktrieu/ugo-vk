@@ -20,6 +20,31 @@ void VulkanDevice::destroy()
 	vkDestroyDevice(this->logical_device, nullptr);
 }
 
+VkCommandPool alloc_command_pool(VkDevice device, uint32_t queue_index, VkCommandPoolCreateFlags flags)
+{
+	VkCommandPoolCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+
+	info.queueFamilyIndex = queue_index;
+	info.flags = flags;
+
+	VkCommandPool pool;
+	auto result = vkCreateCommandPool(device, &info, nullptr, &pool);
+	vk_check(result);
+
+	return pool;
+}
+
+VkCommandPool VulkanDevice::alloc_graphics_pool(VkCommandPoolCreateFlags flags)
+{
+	return alloc_command_pool(this->logical_device, this->get_graphics_family(), flags);
+}
+
+VkCommandPool VulkanDevice::alloc_transfer_pool(VkCommandPoolCreateFlags flags)
+{
+	return alloc_command_pool(this->logical_device, this->get_transfer_family(), flags);
+}
+
 void VulkanDevice::create_logical_device()
 {
 	VkDeviceCreateInfo info = {};

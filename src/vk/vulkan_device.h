@@ -22,6 +22,9 @@ public:
     uint32_t get_transfer_family() { return this->transfer_family; }
     uint32_t get_present_family() { return this->present_family; }
 
+    VkCommandPool alloc_graphics_pool(VkCommandPoolCreateFlags flags);
+    VkCommandPool alloc_transfer_pool(VkCommandPoolCreateFlags flags);
+
 private:
     void create_logical_device();
 
