@@ -6,11 +6,16 @@
 
 class VulkanDevice;
 
+struct GraphicsPipeline {
+	VkPipeline pipeline;
+	VkPipelineLayout layout;
+};
+
 class PipelineBuilder {
 public:
 	PipelineBuilder(VulkanDevice& device);
 
-	VkPipeline build();
+	GraphicsPipeline build();
 
 	void set_vertex_shader_from_file(std::string_view filename);
 	void set_fragment_shader_from_file(std::string_view filename);

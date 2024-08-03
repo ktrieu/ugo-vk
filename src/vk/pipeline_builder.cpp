@@ -76,7 +76,7 @@ void PipelineBuilder::set_depth_format(VkFormat format)
 	_depth_format = format;
 }
 
-VkPipeline PipelineBuilder::build()
+GraphicsPipeline PipelineBuilder::build()
 {
 	if (_vertex_shader == VK_NULL_HANDLE || _fragment_shader == VK_NULL_HANDLE)
 	{
@@ -191,5 +191,8 @@ VkPipeline PipelineBuilder::build()
 	vkDestroyShaderModule(_device.get_device(), _vertex_shader, nullptr);
 	vkDestroyShaderModule(_device.get_device(), _fragment_shader, nullptr);
 
-	return pipeline;
+	return {
+		pipeline,
+		layout
+	};
 }
