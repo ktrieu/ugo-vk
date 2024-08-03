@@ -5,6 +5,7 @@
 
 const std::vector<const char *> PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
 #if defined(__APPLE__) && defined(__MACH__)
 	"VK_KHR_portability_subset",
 #endif

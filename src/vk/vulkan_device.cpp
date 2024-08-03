@@ -30,6 +30,12 @@ void VulkanDevice::create_logical_device()
 	device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	info.pEnabledFeatures = &device_features.features;
 
+	// Dynamic rendering is hidden behind it's own feature flag struct.
+	VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features = {};
+	dynamic_rendering_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+	dynamic_rendering_features.dynamicRendering = VK_TRUE;
+	info.pNext = &dynamic_rendering_features;
+
 	info.enabledExtensionCount = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.size();
 	info.ppEnabledExtensionNames = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.data();
 
