@@ -11,7 +11,12 @@ class VulkanSwapchain
 {
 public:
 	VulkanSwapchain(VulkanContext &context, Window &window);
+
+	VkSwapchainKHR get_swapchain() { return this->swapchain; }
 	VkFormat get_surface_format() { return this->surface_format; }
+
+	uint32_t acquire_image(VkSemaphore completion);
+	VkImage get_swapchain_image(uint32_t idx);
 
 	void destroy();
 

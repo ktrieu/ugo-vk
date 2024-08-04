@@ -84,6 +84,20 @@ void VulkanSwapchain::destroy()
     vkDestroySwapchainKHR(this->context.get_device().get_device(), this->swapchain, nullptr);
 }
 
+uint32_t VulkanSwapchain::acquire_image(VkSemaphore completion)
+{
+    uint32_t image_idx;
+    auto result = vkAcquireNextImageKHR(this->context.get_device().get_device(), this->swapchain, 1000000000, completion, nullptr, &image_idx);
+    vk_check(result);
+
+    return image_idx;
+}
+
+VkImage VulkanSwapchain::get_swapchain_image(uint32_t image_idx)
+{
+    return this->images.at(image_idx);
+}
+
 VkSurfaceFormatKHR VulkanSwapchain::select_format()
 {
     auto formats = this->context.get_device().get_physical_device().get_surface_formats();

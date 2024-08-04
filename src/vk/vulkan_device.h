@@ -22,6 +22,10 @@ public:
     uint32_t get_transfer_family() { return this->transfer_family; }
     uint32_t get_present_family() { return this->present_family; }
 
+    VkQueue get_graphics_queue() { return this->graphics_queue; }
+    VkQueue get_transfer_queue() { return this->transfer_queue; }
+    VkQueue get_present_queue() { return this->present_queue; }
+
     VkCommandPool alloc_graphics_pool(VkCommandPoolCreateFlags flags);
     VkCommandPool alloc_transfer_pool(VkCommandPoolCreateFlags flags);
 
