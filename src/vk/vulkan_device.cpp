@@ -61,6 +61,12 @@ void VulkanDevice::create_logical_device()
 	dynamic_rendering_features.dynamicRendering = VK_TRUE;
 	info.pNext = &dynamic_rendering_features;
 
+	// As is synchronization2.
+	VkPhysicalDeviceSynchronization2Features sync_features = {};
+	sync_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+	sync_features.synchronization2 = VK_TRUE;
+	dynamic_rendering_features.pNext = &sync_features;
+
 	info.enabledExtensionCount = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.size();
 	info.ppEnabledExtensionNames = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.data();
 
