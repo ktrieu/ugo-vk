@@ -46,12 +46,12 @@ VkShaderModule create_shader_module(VkDevice device, std::string_view filename)
 
 void PipelineBuilder::set_vertex_shader_from_file(std::string_view filename)
 {
-	_vertex_shader = create_shader_module(this->_device.get_device(), filename);
+	_vertex_shader = create_shader_module(this->_device.device(), filename);
 }
 
 void PipelineBuilder::set_fragment_shader_from_file(std::string_view filename)
 {
-	_fragment_shader = create_shader_module(this->_device.get_device(), filename);
+	_fragment_shader = create_shader_module(this->_device.device(), filename);
 }
 
 VkPipelineShaderStageCreateInfo create_shader_stage_info(VkShaderModule shader, VkShaderStageFlagBits stage)
@@ -179,17 +179,17 @@ GraphicsPipeline PipelineBuilder::build()
 	// No descriptor sets or push constants yet, so don't initialize anything else.
 
 	VkPipelineLayout layout;
-	auto result = vkCreatePipelineLayout(_device.get_device(), &layout_info, nullptr, &layout);
+	auto result = vkCreatePipelineLayout(_device.device(), &layout_info, nullptr, &layout);
 	vk_check(result);
 	info.layout = layout;
 
 	VkPipeline pipeline;
-	result = vkCreateGraphicsPipelines(_device.get_device(), VK_NULL_HANDLE, 1, &info, nullptr, &pipeline);
+	result = vkCreateGraphicsPipelines(_device.device(), VK_NULL_HANDLE, 1, &info, nullptr, &pipeline);
 	vk_check(result);
 
 	// We don't need the attached shaders anymore after the pipeline has been created.
-	vkDestroyShaderModule(_device.get_device(), _vertex_shader, nullptr);
-	vkDestroyShaderModule(_device.get_device(), _fragment_shader, nullptr);
+	vkDestroyShaderModule(_device.device(), _vertex_shader, nullptr);
+	vkDestroyShaderModule(_device.device(), _fragment_shader, nullptr);
 
 	return {
 		pipeline,
