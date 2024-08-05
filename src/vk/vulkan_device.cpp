@@ -10,14 +10,14 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice &device_info) : context(context), physical_device_info(device_info)
+VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice &device_info) : _context(context), _physical_device(device_info)
 {
 	this->create_logical_device();
 }
 
 void VulkanDevice::destroy()
 {
-	vkDestroyDevice(this->logical_device, nullptr);
+	vkDestroyDevice(this->_device, nullptr);
 }
 
 VkCommandPool alloc_command_pool(VkDevice device, uint32_t queue_index, VkCommandPoolCreateFlags flags)
@@ -37,12 +37,12 @@ VkCommandPool alloc_command_pool(VkDevice device, uint32_t queue_index, VkComman
 
 VkCommandPool VulkanDevice::alloc_graphics_pool(VkCommandPoolCreateFlags flags)
 {
-	return alloc_command_pool(this->logical_device, this->get_graphics_family(), flags);
+	return alloc_command_pool(this->_device, this->graphics_family(), flags);
 }
 
 VkCommandPool VulkanDevice::alloc_transfer_pool(VkCommandPoolCreateFlags flags)
 {
-	return alloc_command_pool(this->logical_device, this->get_transfer_family(), flags);
+	return alloc_command_pool(this->_device, this->transfer_family(), flags);
 }
 
 void VulkanDevice::create_logical_device()
@@ -64,29 +64,29 @@ void VulkanDevice::create_logical_device()
 	info.enabledExtensionCount = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.size();
 	info.ppEnabledExtensionNames = PhysicalDevice::REQUIRED_DEVICE_EXTENSIONS.data();
 
-	std::optional<uint32_t> graphics_family_idx = this->physical_device_info.get_graphics_family();
+	std::optional<uint32_t> graphics_family_idx = this->_physical_device.get_graphics_family();
 	if (!graphics_family_idx.has_value())
 	{
 		throw std::runtime_error("No graphics queue family available.");
 	}
-	this->graphics_family = graphics_family_idx.value();
+	this->_graphics_family = graphics_family_idx.value();
 
-	std::optional<uint32_t> present_family_idx = this->physical_device_info.get_present_family();
+	std::optional<uint32_t> present_family_idx = this->_physical_device.get_present_family();
 	if (!present_family_idx.has_value())
 	{
 		throw std::runtime_error("No present queue family available.");
 	}
-	this->present_family = present_family_idx.value();
+	this->_present_family = present_family_idx.value();
 
-	std::optional<uint32_t> transfer_family_idx = this->physical_device_info.get_transfer_family();
+	std::optional<uint32_t> transfer_family_idx = this->_physical_device.get_transfer_family();
 	if (!transfer_family_idx.has_value())
 	{
 		throw std::runtime_error("No transfer family available.");
 	}
-	this->transfer_family = transfer_family_idx.value();
+	this->_transfer_family = transfer_family_idx.value();
 
 	// Queue families may overlap so use a set to distinguish them.
-	std::unordered_set<uint32_t> required_queues = {this->graphics_family, this->transfer_family, this->present_family};
+	std::unordered_set<uint32_t> required_queues = {this->_graphics_family, this->_transfer_family, this->_present_family};
 
 	std::vector<VkDeviceQueueCreateInfo> queue_infos;
 	float priority = 1.0f;
@@ -105,24 +105,24 @@ void VulkanDevice::create_logical_device()
 	info.queueCreateInfoCount = queue_infos.size();
 	info.pQueueCreateInfos = queue_infos.data();
 
-	VkResult result = vkCreateDevice(this->physical_device_info.get_device(), &info, nullptr, &this->logical_device);
+	VkResult result = vkCreateDevice(this->_physical_device.get_device(), &info, nullptr, &this->_device);
 	vk_check(result);
 
 	VkDeviceQueueInfo2 graphics_queue_info = {};
 	graphics_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	graphics_queue_info.queueFamilyIndex = this->graphics_family;
+	graphics_queue_info.queueFamilyIndex = this->_graphics_family;
 	graphics_queue_info.queueIndex = 0;
-	vkGetDeviceQueue2(this->logical_device, &graphics_queue_info, &this->graphics_queue);
+	vkGetDeviceQueue2(this->_device, &graphics_queue_info, &this->_graphics_queue);
 
 	VkDeviceQueueInfo2 present_queue_info = {};
 	present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	present_queue_info.queueFamilyIndex = this->present_family;
+	present_queue_info.queueFamilyIndex = this->_present_family;
 	present_queue_info.queueIndex = 0;
-	vkGetDeviceQueue2(this->logical_device, &present_queue_info, &this->present_queue);
+	vkGetDeviceQueue2(this->_device, &present_queue_info, &this->_present_queue);
 
 	VkDeviceQueueInfo2 transfer_queue_info = {};
 	transfer_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-	transfer_queue_info.queueFamilyIndex = this->transfer_family;
+	transfer_queue_info.queueFamilyIndex = this->_transfer_family;
 	transfer_queue_info.queueIndex = 0;
-	vkGetDeviceQueue2(this->logical_device, &transfer_queue_info, &this->transfer_queue);
+	vkGetDeviceQueue2(this->_device, &transfer_queue_info, &this->_transfer_queue);
 }

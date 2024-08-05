@@ -7,7 +7,7 @@
 #include <optional>
 
 #include "vulkan_device.h"
-#include "vulkan_swapchain.h"
+#include "swapchain.h"
 
 class Window;
 
@@ -17,9 +17,14 @@ public:
     VulkanContext(std::string_view app_name, Window &window);
     ~VulkanContext();
 
-    VulkanDevice &get_device();
-    VulkanSwapchain& get_swapchain() { return this->swapchain.value(); }
-    VkSurfaceKHR get_surface() { return this->surface; }
+    VulkanDevice& device() { return _device.value(); }
+    VkDevice vk_device() { return _device.value().device(); }
+    PhysicalDevice& physical_device() { return _device.value().physical_device(); }
+
+    Swapchain& swapchain() { return this->_swapchain.value(); }
+    VkSwapchainKHR vk_swapchain() { return this->_swapchain.value().swapchain(); }
+
+    VkSurfaceKHR surface() { return this->_surface; }
 
 private:
     std::vector<const char *> get_required_extensions();
@@ -38,13 +43,13 @@ private:
     const bool enable_validation_layers = true;
 #endif
 
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debug_messenger;
+    VkInstance _instance;
+    VkDebugUtilsMessengerEXT _debug_messenger;
 
-    VkSurfaceKHR surface;
+    VkSurfaceKHR _surface;
 
-    std::optional<VulkanSwapchain> swapchain;
-    std::optional<VulkanDevice> device;
+    std::optional<Swapchain> _swapchain;
+    std::optional<VulkanDevice> _device;
 
-    std::string app_name;
+    std::string _app_name;
 };

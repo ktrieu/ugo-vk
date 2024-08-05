@@ -1,4 +1,4 @@
-#include "vulkan_swapchain.h"
+#include "swapchain.h"
 
 #include <GLFW/glfw3.h>
 
@@ -8,24 +8,24 @@
 #include "vk/vulkan_error.h"
 #include "window/window.h"
 
-VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : context(context)
+Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
 {
     VkSwapchainCreateInfoKHR info = {};
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    info.surface = context.get_surface();
+    info.surface = context.surface();
 
     auto surface_format = this->select_format();
     info.imageFormat = surface_format.format;
     info.imageColorSpace = surface_format.colorSpace;
-    this->surface_format = surface_format.format;
+    _surface_format = surface_format.format;
 
     info.presentMode = this->select_present_mode();
     info.clipped = VK_TRUE;
 
-    this->swap_extent = this->choose_swap_extent(window);
-    info.imageExtent = this->swap_extent;
+    _swap_extent = this->choose_swap_extent(window);
+    info.imageExtent = _swap_extent;
 
-    auto caps = this->context.get_device().get_physical_device().get_surface_caps();
+    VkSurfaceCapabilitiesKHR caps = _context.physical_device().get_surface_caps();
     // Request 1 more than the minimum so we don't wait on the driver.
     info.minImageCount = caps.minImageCount + 1;
     // Unless that's more than is supported. 0 means there is no maximum, so we can skip the check
@@ -34,12 +34,12 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
         info.minImageCount = std::min(caps.minImageCount, caps.maxImageCount);
     }
 
-    uint32_t graphics_family = this->context.get_device().get_graphics_family();
-    uint32_t present_family = this->context.get_device().get_present_family();
-    this->image_sharing_required = graphics_family != present_family;
+    uint32_t graphics_family = _context.device().graphics_family();
+    uint32_t present_family = _context.device().present_family();
+    _image_sharing_required = graphics_family != present_family;
     uint32_t families[] = {graphics_family, present_family};
 
-    if (image_sharing_required)
+    if (_image_sharing_required)
     {
         info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         info.queueFamilyIndexCount = 2;
@@ -56,51 +56,51 @@ VulkanSwapchain::VulkanSwapchain(VulkanContext &context, Window &window) : conte
     info.imageArrayLayers = 1;
     info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    auto result = vkCreateSwapchainKHR(this->context.get_device().get_device(), &info, nullptr, &this->swapchain);
+    auto result = vkCreateSwapchainKHR(_context.vk_device(), &info, nullptr, &_swapchain);
     vk_check(result);
 
     uint32_t image_count;
-    result = vkGetSwapchainImagesKHR(this->context.get_device().get_device(), this->swapchain, &image_count, nullptr);
+    result = vkGetSwapchainImagesKHR(_context.vk_device(), _swapchain, &image_count, nullptr);
     vk_check(result);
 
-    this->images.resize(image_count);
-    result = vkGetSwapchainImagesKHR(this->context.get_device().get_device(), this->swapchain, &image_count, this->images.data());
+    _images.resize(image_count);
+    result = vkGetSwapchainImagesKHR(_context.vk_device(), _swapchain, &image_count, _images.data());
     vk_check(result);
 
-    this->image_views.resize(image_count);
+    _image_views.resize(image_count);
     for (int i = 0; i < image_count; i++)
     {
-        this->image_views[i] = this->create_image_view(this->images[i]);
+        _image_views[i] = this->create_image_view(_images[i]);
     }
 }
 
-void VulkanSwapchain::destroy()
+void Swapchain::destroy()
 {
-    for (auto view : this->image_views)
+    for (auto view : _image_views)
     {
-        vkDestroyImageView(this->context.get_device().get_device(), view, nullptr);
+        vkDestroyImageView(_context.vk_device(), view, nullptr);
     }
 
-    vkDestroySwapchainKHR(this->context.get_device().get_device(), this->swapchain, nullptr);
+    vkDestroySwapchainKHR(_context.vk_device(), _swapchain, nullptr);
 }
 
-uint32_t VulkanSwapchain::acquire_image(VkSemaphore completion)
+uint32_t Swapchain::acquire_image(VkSemaphore completion)
 {
     uint32_t image_idx;
-    auto result = vkAcquireNextImageKHR(this->context.get_device().get_device(), this->swapchain, 1000000000, completion, nullptr, &image_idx);
+    auto result = vkAcquireNextImageKHR(_context.vk_device(), _swapchain, 1000000000, completion, nullptr, &image_idx);
     vk_check(result);
 
     return image_idx;
 }
 
-VkImage VulkanSwapchain::get_swapchain_image(uint32_t image_idx)
+VkImage Swapchain::get_swapchain_image(uint32_t image_idx)
 {
-    return this->images.at(image_idx);
+    return _images.at(image_idx);
 }
 
-VkSurfaceFormatKHR VulkanSwapchain::select_format()
+VkSurfaceFormatKHR Swapchain::select_format()
 {
-    auto formats = this->context.get_device().get_physical_device().get_surface_formats();
+    auto formats = _context.physical_device().get_surface_formats();
 
     // Pick a preferred format, or just default to the first one, whatever that is.
     for (auto &f : formats)
@@ -114,9 +114,9 @@ VkSurfaceFormatKHR VulkanSwapchain::select_format()
     return formats[0];
 }
 
-VkPresentModeKHR VulkanSwapchain::select_present_mode()
+VkPresentModeKHR Swapchain::select_present_mode()
 {
-    auto modes = this->context.get_device().get_physical_device().get_present_modes();
+    auto modes = _context.physical_device().get_present_modes();
 
     // We'd like mailbox mode...
     for (auto &m : modes)
@@ -131,9 +131,9 @@ VkPresentModeKHR VulkanSwapchain::select_present_mode()
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanSwapchain::choose_swap_extent(Window &window)
+VkExtent2D Swapchain::choose_swap_extent(Window &window)
 {
-    auto caps = this->context.get_device().get_physical_device().get_surface_caps();
+    auto caps = _context.physical_device().get_surface_caps();
 
     // If the current extent's width is the max, we get to pick the swap extent.
     if (caps.currentExtent.width == std::numeric_limits<uint32_t>::max())
@@ -155,14 +155,14 @@ VkExtent2D VulkanSwapchain::choose_swap_extent(Window &window)
     return caps.currentExtent;
 }
 
-VkImageView VulkanSwapchain::create_image_view(VkImage image)
+VkImageView Swapchain::create_image_view(VkImage image)
 {
     VkImageViewCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = image;
 
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    info.format = this->surface_format;
+    info.format = _surface_format;
 
     info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -176,7 +176,7 @@ VkImageView VulkanSwapchain::create_image_view(VkImage image)
     info.subresourceRange.layerCount = 1;
 
     VkImageView view;
-    auto result = vkCreateImageView(this->context.get_device().get_device(), &info, nullptr, &view);
+    auto result = vkCreateImageView(_context.vk_device(), &info, nullptr, &view);
     vk_check(result);
 
     return view;

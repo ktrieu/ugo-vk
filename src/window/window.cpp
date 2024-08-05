@@ -162,22 +162,22 @@ const uint64_t ONE_SEC_NS = 1000000000;
 
 void Window::run()
 {
-    VulkanDevice& device = this->context.value().get_device();
+    VulkanDevice& device = this->context.value().device();
 
     PipelineBuilder builder(device);
     builder.set_vertex_shader_from_file("shader/tri.vert.spv");
     builder.set_fragment_shader_from_file("shader/tri.frag.spv");
-    builder.set_color_format(this->context.value().get_swapchain().get_surface_format());
+    builder.set_color_format(this->context.value().swapchain().surface_format());
     builder.set_depth_format(VK_FORMAT_UNDEFINED);
 
     GraphicsPipeline pipeline = builder.build();
 
     VkCommandPool command_pool = device.alloc_graphics_pool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    VkCommandBuffer command_buffer = create_command_buffer(device.get_device(), command_pool);
+    VkCommandBuffer command_buffer = create_command_buffer(device.device(), command_pool);
 
-    VkFence render_fence = create_fence(device.get_device(), true);
-    VkSemaphore acquire_semaphore = create_semaphore(device.get_device(), 0);
-    VkSemaphore render_semaphore = create_semaphore(device.get_device(), 0);
+    VkFence render_fence = create_fence(device.device(), true);
+    VkSemaphore acquire_semaphore = create_semaphore(device.device(), 0);
+    VkSemaphore render_semaphore = create_semaphore(device.device(), 0);
 
     uint64_t frame_idx = 0;
 
@@ -186,11 +186,11 @@ void Window::run()
         glfwPollEvents();
 
         // Wait for last frame to be finished.
-        auto result = vkWaitForFences(device.get_device(), 1, &render_fence, VK_TRUE, ONE_SEC_NS);
+        auto result = vkWaitForFences(device.device(), 1, &render_fence, VK_TRUE, ONE_SEC_NS);
         vk_check(result);
 
         // And then reset our fence for the next frame.
-        result = vkResetFences(device.get_device(), 1, &render_fence);
+        result = vkResetFences(device.device(), 1, &render_fence);
         vk_check(result);
 
         result = vkResetCommandBuffer(command_buffer, 0);
@@ -198,8 +198,8 @@ void Window::run()
 
         begin_command_buffer(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        uint32_t swap_image_idx = this->context.value().get_swapchain().acquire_image(acquire_semaphore);
-        VkImage swap_image = this->context.value().get_swapchain().get_swapchain_image(swap_image_idx);
+        uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(acquire_semaphore);
+        VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
 
         transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
@@ -220,14 +220,14 @@ void Window::run()
 
         VkSubmitInfo2 submit_info = create_submit_info(&buffer_submit_info, &wait_submit, &signal_submit);
 
-        result = vkQueueSubmit2(device.get_graphics_queue(), 1, &submit_info, render_fence);
+        result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence);
         vk_check(result);
 
         VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         present_info.swapchainCount = 1;
-        VkSwapchainKHR swapchain = this->context.value().get_swapchain().get_swapchain();
+        VkSwapchainKHR swapchain = this->context.value().vk_swapchain();
         present_info.pSwapchains = &swapchain;
         
         present_info.waitSemaphoreCount = 1;
@@ -235,15 +235,15 @@ void Window::run()
 
         present_info.pImageIndices = &swap_image_idx;
 
-        result = vkQueuePresentKHR(device.get_graphics_queue(), &present_info);
+        result = vkQueuePresentKHR(device.graphics_queue(), &present_info);
         vk_check(result);
 
         frame_idx++;
     }
 
-    vkDestroyCommandPool(device.get_device(), command_pool, nullptr);
-    vkDestroyPipelineLayout(device.get_device(), pipeline.layout, nullptr);
-    vkDestroyPipeline(device.get_device(), pipeline.pipeline, nullptr);
+    vkDestroyCommandPool(device.device(), command_pool, nullptr);
+    vkDestroyPipelineLayout(device.device(), pipeline.layout, nullptr);
+    vkDestroyPipeline(device.device(), pipeline.pipeline, nullptr);
 }
 
 Window::~Window()

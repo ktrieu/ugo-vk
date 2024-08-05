@@ -12,22 +12,22 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanContext::VulkanContext(std::string_view app_name, Window &window) : app_name(app_name)
+VulkanContext::VulkanContext(std::string_view app_name, Window &window) : _app_name(app_name)
 {
     this->create_instance();
     this->create_surface(window);
-    this->device.emplace(this->select_physical_device());
-    this->swapchain.emplace(*this, window);
+    this->_device.emplace(this->select_physical_device());
+    this->_swapchain.emplace(*this, window);
 }
 
 VulkanContext::~VulkanContext()
 {
     if (this->enable_validation_layers)
     {
-        auto debug_messenger_destroy_func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->instance, "vkDestroyDebugUtilsMessengerEXT");
+        auto debug_messenger_destroy_func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->_instance, "vkDestroyDebugUtilsMessengerEXT");
         if (debug_messenger_destroy_func != nullptr)
         {
-            debug_messenger_destroy_func(this->instance, this->debug_messenger, nullptr);
+            debug_messenger_destroy_func(this->_instance, this->_debug_messenger, nullptr);
         }
         else
         {
@@ -36,12 +36,12 @@ VulkanContext::~VulkanContext()
         }
     }
 
-    this->swapchain.value().destroy();
-    this->device.value().destroy();
+    this->_swapchain.value().destroy();
+    this->_device.value().destroy();
 
-    vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
+    vkDestroySurfaceKHR(this->_instance, this->_surface, nullptr);
 
-    vkDestroyInstance(this->instance, nullptr);
+    vkDestroyInstance(this->_instance, nullptr);
 }
 
 std::vector<const char *> VulkanContext::get_required_extensions()
@@ -108,7 +108,7 @@ void VulkanContext::create_instance()
 {
     VkApplicationInfo app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = this->app_name.c_str();
+    app_info.pApplicationName = this->_app_name.c_str();
     app_info.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
     app_info.apiVersion = VK_API_VERSION_1_3;
 
@@ -130,7 +130,7 @@ void VulkanContext::create_instance()
         create_info.ppEnabledLayerNames = validation_layers.data();
     }
 
-    VkResult result = vkCreateInstance(&create_info, nullptr, &this->instance);
+    VkResult result = vkCreateInstance(&create_info, nullptr, &this->_instance);
     vk_check(result);
 
     if (this->enable_validation_layers)
@@ -141,25 +141,25 @@ void VulkanContext::create_instance()
 
 void VulkanContext::create_surface(Window &window)
 {
-    auto result = glfwCreateWindowSurface(this->instance, window.get_window(), nullptr, &this->surface);
+    auto result = glfwCreateWindowSurface(this->_instance, window.get_window(), nullptr, &this->_surface);
     vk_check(result);
 }
 
 VulkanDevice VulkanContext::select_physical_device()
 {
     uint32_t num_available;
-    auto result = vkEnumeratePhysicalDevices(this->instance, &num_available, nullptr);
+    auto result = vkEnumeratePhysicalDevices(this->_instance, &num_available, nullptr);
     vk_check(result);
 
     std::vector<VkPhysicalDevice> available(num_available);
-    result = vkEnumeratePhysicalDevices(this->instance, &num_available, available.data());
+    result = vkEnumeratePhysicalDevices(this->_instance, &num_available, available.data());
     vk_check(result);
 
     std::vector<PhysicalDevice> device_infos;
 
     for (int i = 0; i < num_available; i++)
     {
-        PhysicalDevice device_info(available[i], this->surface);
+        PhysicalDevice device_info(available[i], this->_surface);
 
         log("Device {}: {}", i, device_info.get_name());
         if (device_info.is_usable())
@@ -203,23 +203,12 @@ void VulkanContext::create_debug_messenger()
     info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     info.pfnUserCallback = debugCallback;
 
-    auto create_func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->instance, "vkCreateDebugUtilsMessengerEXT");
+    auto create_func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(this->_instance, "vkCreateDebugUtilsMessengerEXT");
     if (create_func == nullptr)
     {
         throw std::runtime_error("Debug messenger create function not found.");
     }
 
-    VkResult result = create_func(this->instance, &info, nullptr, &this->debug_messenger);
+    VkResult result = create_func(this->_instance, &info, nullptr, &this->_debug_messenger);
     vk_check(result);
-}
-
-VulkanDevice &VulkanContext::get_device()
-{
-    // This should never happen since we initialize the device in the constructor.
-    if (!this->device.has_value())
-    {
-        throw std::runtime_error("Vulkan device not initialized!");
-    }
-
-    return this->device.value();
 }
