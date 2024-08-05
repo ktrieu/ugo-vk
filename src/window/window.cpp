@@ -167,7 +167,7 @@ void Window::run()
     PipelineBuilder builder(device);
     builder.set_vertex_shader_from_file("shader/tri.vert.spv");
     builder.set_fragment_shader_from_file("shader/tri.frag.spv");
-    builder.set_color_format(this->context.value().get_swapchain().get_surface_format());
+    builder.set_color_format(this->context.value().get_swapchain().surface_format());
     builder.set_depth_format(VK_FORMAT_UNDEFINED);
 
     GraphicsPipeline pipeline = builder.build();
@@ -227,7 +227,7 @@ void Window::run()
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         present_info.swapchainCount = 1;
-        VkSwapchainKHR swapchain = this->context.value().get_swapchain().get_swapchain();
+        VkSwapchainKHR swapchain = this->context.value().get_swapchain().swapchain();
         present_info.pSwapchains = &swapchain;
         
         present_info.waitSemaphoreCount = 1;

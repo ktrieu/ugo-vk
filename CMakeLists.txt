@@ -60,8 +60,8 @@ add_executable(ugo-vk-bin
     src/vk/vulkan_error.cpp
     src/vk/physical_device.h
     src/vk/physical_device.cpp
-    src/vk/vulkan_swapchain.h
-    src/vk/vulkan_swapchain.cpp
+    src/vk/swapchain.h
+    src/vk/swapchain.cpp
     src/vk/pipeline_builder.h
     src/vk/pipeline_builder.cpp
 )

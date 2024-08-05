@@ -7,7 +7,7 @@
 #include <optional>
 
 #include "vulkan_device.h"
-#include "vulkan_swapchain.h"
+#include "swapchain.h"
 
 class Window;
 
@@ -18,7 +18,7 @@ public:
     ~VulkanContext();
 
     VulkanDevice &get_device();
-    VulkanSwapchain& get_swapchain() { return this->swapchain.value(); }
+    Swapchain& get_swapchain() { return this->swapchain.value(); }
     VkSurfaceKHR get_surface() { return this->surface; }
 
 private:
@@ -43,7 +43,7 @@ private:
 
     VkSurfaceKHR surface;
 
-    std::optional<VulkanSwapchain> swapchain;
+    std::optional<Swapchain> swapchain;
     std::optional<VulkanDevice> device;
 
     std::string app_name;
