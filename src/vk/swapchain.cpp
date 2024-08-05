@@ -25,7 +25,7 @@ Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
     _swap_extent = this->choose_swap_extent(window);
     info.imageExtent = _swap_extent;
 
-    VkSurfaceCapabilitiesKHR caps = _context.device().physical_device().get_surface_caps();
+    VkSurfaceCapabilitiesKHR caps = _context.physical_device().get_surface_caps();
     // Request 1 more than the minimum so we don't wait on the driver.
     info.minImageCount = caps.minImageCount + 1;
     // Unless that's more than is supported. 0 means there is no maximum, so we can skip the check
@@ -56,15 +56,15 @@ Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
     info.imageArrayLayers = 1;
     info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    auto result = vkCreateSwapchainKHR(_context.device().device(), &info, nullptr, &_swapchain);
+    auto result = vkCreateSwapchainKHR(_context.vk_device(), &info, nullptr, &_swapchain);
     vk_check(result);
 
     uint32_t image_count;
-    result = vkGetSwapchainImagesKHR(_context.device().device(), _swapchain, &image_count, nullptr);
+    result = vkGetSwapchainImagesKHR(_context.vk_device(), _swapchain, &image_count, nullptr);
     vk_check(result);
 
     _images.resize(image_count);
-    result = vkGetSwapchainImagesKHR(_context.device().device(), _swapchain, &image_count, _images.data());
+    result = vkGetSwapchainImagesKHR(_context.vk_device(), _swapchain, &image_count, _images.data());
     vk_check(result);
 
     _image_views.resize(image_count);
@@ -78,16 +78,16 @@ void Swapchain::destroy()
 {
     for (auto view : _image_views)
     {
-        vkDestroyImageView(_context.device().device(), view, nullptr);
+        vkDestroyImageView(_context.vk_device(), view, nullptr);
     }
 
-    vkDestroySwapchainKHR(_context.device().device(), _swapchain, nullptr);
+    vkDestroySwapchainKHR(_context.vk_device(), _swapchain, nullptr);
 }
 
 uint32_t Swapchain::acquire_image(VkSemaphore completion)
 {
     uint32_t image_idx;
-    auto result = vkAcquireNextImageKHR(_context.device().device(), _swapchain, 1000000000, completion, nullptr, &image_idx);
+    auto result = vkAcquireNextImageKHR(_context.vk_device(), _swapchain, 1000000000, completion, nullptr, &image_idx);
     vk_check(result);
 
     return image_idx;
@@ -100,7 +100,7 @@ VkImage Swapchain::get_swapchain_image(uint32_t image_idx)
 
 VkSurfaceFormatKHR Swapchain::select_format()
 {
-    auto formats = _context.device().physical_device().get_surface_formats();
+    auto formats = _context.physical_device().get_surface_formats();
 
     // Pick a preferred format, or just default to the first one, whatever that is.
     for (auto &f : formats)
@@ -116,7 +116,7 @@ VkSurfaceFormatKHR Swapchain::select_format()
 
 VkPresentModeKHR Swapchain::select_present_mode()
 {
-    auto modes = _context.device().physical_device().get_present_modes();
+    auto modes = _context.physical_device().get_present_modes();
 
     // We'd like mailbox mode...
     for (auto &m : modes)
@@ -133,7 +133,7 @@ VkPresentModeKHR Swapchain::select_present_mode()
 
 VkExtent2D Swapchain::choose_swap_extent(Window &window)
 {
-    auto caps = _context.device().physical_device().get_surface_caps();
+    auto caps = _context.physical_device().get_surface_caps();
 
     // If the current extent's width is the max, we get to pick the swap extent.
     if (caps.currentExtent.width == std::numeric_limits<uint32_t>::max())
@@ -176,7 +176,7 @@ VkImageView Swapchain::create_image_view(VkImage image)
     info.subresourceRange.layerCount = 1;
 
     VkImageView view;
-    auto result = vkCreateImageView(_context.device().device(), &info, nullptr, &view);
+    auto result = vkCreateImageView(_context.vk_device(), &info, nullptr, &view);
     vk_check(result);
 
     return view;

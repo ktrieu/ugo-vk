@@ -227,7 +227,7 @@ void Window::run()
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         present_info.swapchainCount = 1;
-        VkSwapchainKHR swapchain = this->context.value().swapchain().swapchain();
+        VkSwapchainKHR swapchain = this->context.value().vk_swapchain();
         present_info.pSwapchains = &swapchain;
         
         present_info.waitSemaphoreCount = 1;
