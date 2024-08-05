@@ -17,9 +17,9 @@ public:
     VulkanContext(std::string_view app_name, Window &window);
     ~VulkanContext();
 
-    VulkanDevice &get_device();
-    Swapchain& get_swapchain() { return this->swapchain.value(); }
-    VkSurfaceKHR get_surface() { return this->surface; }
+    VulkanDevice& device() { return _device.value(); }
+    Swapchain& swapchain() { return this->_swapchain.value(); }
+    VkSurfaceKHR surface() { return this->_surface; }
 
 private:
     std::vector<const char *> get_required_extensions();
@@ -38,13 +38,13 @@ private:
     const bool enable_validation_layers = true;
 #endif
 
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debug_messenger;
+    VkInstance _instance;
+    VkDebugUtilsMessengerEXT _debug_messenger;
 
-    VkSurfaceKHR surface;
+    VkSurfaceKHR _surface;
 
-    std::optional<Swapchain> swapchain;
-    std::optional<VulkanDevice> device;
+    std::optional<Swapchain> _swapchain;
+    std::optional<VulkanDevice> _device;
 
-    std::string app_name;
+    std::string _app_name;
 };

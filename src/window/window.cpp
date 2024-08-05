@@ -162,12 +162,12 @@ const uint64_t ONE_SEC_NS = 1000000000;
 
 void Window::run()
 {
-    VulkanDevice& device = this->context.value().get_device();
+    VulkanDevice& device = this->context.value().device();
 
     PipelineBuilder builder(device);
     builder.set_vertex_shader_from_file("shader/tri.vert.spv");
     builder.set_fragment_shader_from_file("shader/tri.frag.spv");
-    builder.set_color_format(this->context.value().get_swapchain().surface_format());
+    builder.set_color_format(this->context.value().swapchain().surface_format());
     builder.set_depth_format(VK_FORMAT_UNDEFINED);
 
     GraphicsPipeline pipeline = builder.build();
@@ -198,8 +198,8 @@ void Window::run()
 
         begin_command_buffer(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        uint32_t swap_image_idx = this->context.value().get_swapchain().acquire_image(acquire_semaphore);
-        VkImage swap_image = this->context.value().get_swapchain().get_swapchain_image(swap_image_idx);
+        uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(acquire_semaphore);
+        VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
 
         transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
@@ -227,7 +227,7 @@ void Window::run()
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         present_info.swapchainCount = 1;
-        VkSwapchainKHR swapchain = this->context.value().get_swapchain().swapchain();
+        VkSwapchainKHR swapchain = this->context.value().swapchain().swapchain();
         present_info.pSwapchains = &swapchain;
         
         present_info.waitSemaphoreCount = 1;
