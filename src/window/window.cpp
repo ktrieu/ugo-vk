@@ -8,6 +8,7 @@
 #include "vk/vulkan_context.h"
 #include "vk/pipeline_builder.h"
 #include "vk/vulkan_error.h"
+#include "vk/sync.h"
 
 Window::Window(int width, int height, std::string_view title) : width(width), height(height), title(title)
 {
@@ -175,9 +176,10 @@ void Window::run()
     VkCommandPool command_pool = device.alloc_graphics_pool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBuffer command_buffer = create_command_buffer(device.device(), command_pool);
 
-    VkFence render_fence = create_fence(device.device(), true);
-    VkSemaphore acquire_semaphore = create_semaphore(device.device(), 0);
-    VkSemaphore render_semaphore = create_semaphore(device.device(), 0);
+  
+    vk::Fence render_fence(device, VK_FENCE_CREATE_SIGNALED_BIT);
+    vk::Semaphore swap_acquired(device, 0);
+    vk::Semaphore render_complete(device, 0);
 
     uint64_t frame_idx = 0;
 
@@ -185,20 +187,12 @@ void Window::run()
     {
         glfwPollEvents();
 
-        // Wait for last frame to be finished.
-        auto result = vkWaitForFences(device.device(), 1, &render_fence, VK_TRUE, ONE_SEC_NS);
-        vk_check(result);
-
-        // And then reset our fence for the next frame.
-        result = vkResetFences(device.device(), 1, &render_fence);
-        vk_check(result);
-
-        result = vkResetCommandBuffer(command_buffer, 0);
-        vk_check(result);
+        render_fence.wait(ONE_SEC_NS);
+        render_fence.reset();
 
         begin_command_buffer(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(acquire_semaphore);
+        uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(swap_acquired);
         VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
 
         transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
@@ -211,16 +205,16 @@ void Window::run()
 
         transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        result = vkEndCommandBuffer(command_buffer);
+        auto result = vkEndCommandBuffer(command_buffer);
         vk_check(result);
 
-        VkSemaphoreSubmitInfo wait_submit = semaphore_submit_info(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, acquire_semaphore);
-        VkSemaphoreSubmitInfo signal_submit = semaphore_submit_info(VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, render_semaphore);
+        VkSemaphoreSubmitInfo wait_submit = swap_acquired.submit_info(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        VkSemaphoreSubmitInfo signal_submit = render_complete.submit_info(VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
         VkCommandBufferSubmitInfo buffer_submit_info = command_submit_info(command_buffer);
 
         VkSubmitInfo2 submit_info = create_submit_info(&buffer_submit_info, &wait_submit, &signal_submit);
 
-        result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence);
+        result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence.vk_fence());
         vk_check(result);
 
         VkPresentInfoKHR present_info = {};
@@ -231,7 +225,8 @@ void Window::run()
         present_info.pSwapchains = &swapchain;
         
         present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &render_semaphore;
+        VkSemaphore present_wait = render_complete.vk_semaphore();
+        present_info.pWaitSemaphores = &present_wait;
 
         present_info.pImageIndices = &swap_image_idx;
 
@@ -240,6 +235,9 @@ void Window::run()
 
         frame_idx++;
     }
+
+    auto result = vkDeviceWaitIdle(device.device());
+    vk_check(result);
 
     vkDestroyCommandPool(device.device(), command_pool, nullptr);
     vkDestroyPipelineLayout(device.device(), pipeline.layout, nullptr);

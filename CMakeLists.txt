@@ -64,6 +64,8 @@ add_executable(ugo-vk-bin
     src/vk/swapchain.cpp
     src/vk/pipeline_builder.h
     src/vk/pipeline_builder.cpp
+    src/vk/sync.h
+    src/vk/sync.cpp
 )
 
 target_include_directories(ugo-vk-bin PRIVATE src)

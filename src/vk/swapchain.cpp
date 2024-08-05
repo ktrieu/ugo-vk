@@ -6,6 +6,7 @@
 
 #include "vk/vulkan_context.h"
 #include "vk/vulkan_error.h"
+#include "vk/sync.h"
 #include "window/window.h"
 
 Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
@@ -84,10 +85,10 @@ void Swapchain::destroy()
     vkDestroySwapchainKHR(_context.vk_device(), _swapchain, nullptr);
 }
 
-uint32_t Swapchain::acquire_image(VkSemaphore completion)
+uint32_t Swapchain::acquire_image(vk::Semaphore& completion)
 {
     uint32_t image_idx;
-    auto result = vkAcquireNextImageKHR(_context.vk_device(), _swapchain, 1000000000, completion, nullptr, &image_idx);
+    auto result = vkAcquireNextImageKHR(_context.vk_device(), _swapchain, 1000000000, completion.vk_semaphore(), nullptr, &image_idx);
     vk_check(result);
 
     return image_idx;

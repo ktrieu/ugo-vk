@@ -7,6 +7,10 @@
 class Window;
 class VulkanContext;
 
+namespace vk {
+	class Semaphore;
+}
+
 class Swapchain
 {
 public:
@@ -15,7 +19,7 @@ public:
 	VkSwapchainKHR swapchain() { return _swapchain; }
 	VkFormat surface_format() { return _surface_format; }
 
-	uint32_t acquire_image(VkSemaphore completion);
+	uint32_t acquire_image(vk::Semaphore& completion);
 	VkImage get_swapchain_image(uint32_t idx);
 
 	void destroy();
