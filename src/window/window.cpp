@@ -7,6 +7,7 @@
 
 #include "vk/context.h"
 #include "vk/pipeline_builder.h"
+#include "vk/command_buffer.h"
 #include "vk/vulkan_error.h"
 #include "vk/sync.h"
 
@@ -129,9 +130,8 @@ void Window::run()
     vk::GraphicsPipeline pipeline = builder.build();
 
     VkCommandPool command_pool = device.alloc_graphics_pool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    VkCommandBuffer command_buffer = create_command_buffer(device.device(), command_pool);
+    vk::CommandBuffer cmd(device.device(), command_pool);
 
-  
     vk::Fence render_fence(device, VK_FENCE_CREATE_SIGNALED_BIT);
     vk::Semaphore swap_acquired(device, 0);
     vk::Semaphore render_complete(device, 0);
@@ -145,31 +145,30 @@ void Window::run()
         render_fence.wait(ONE_SEC_NS);
         render_fence.reset();
 
-        begin_command_buffer(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        cmd.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(swap_acquired);
         VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
 
-        transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+        transition_image(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
         VkClearColorValue clear_color;
         clear_color = { {1.0f, (float)std::abs(std::sin((double)frame_idx / 10)), 1.0f, 1.0f} };
         VkImageSubresourceRange clear_range = get_image_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
-        vkCmdClearColorImage(command_buffer, swap_image, VK_IMAGE_LAYOUT_GENERAL, &clear_color, 1, &clear_range);
+        vkCmdClearColorImage(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_GENERAL, &clear_color, 1, &clear_range);
 
-        transition_image(command_buffer, swap_image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        transition_image(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        auto result = vkEndCommandBuffer(command_buffer);
-        vk_check(result);
+        cmd.end();
 
         VkSemaphoreSubmitInfo wait_submit = swap_acquired.submit_info(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
         VkSemaphoreSubmitInfo signal_submit = render_complete.submit_info(VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
-        VkCommandBufferSubmitInfo buffer_submit_info = command_submit_info(command_buffer);
+        VkCommandBufferSubmitInfo buffer_submit_info = cmd.submit_info();
 
         VkSubmitInfo2 submit_info = create_submit_info(&buffer_submit_info, &wait_submit, &signal_submit);
 
-        result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence.vk_fence());
+        auto result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence.vk_fence());
         vk_check(result);
 
         VkPresentInfoKHR present_info = {};
