@@ -47,25 +47,25 @@ foreach(shader_file ${SHADERS})
 endforeach()
 
 add_executable(ugo-vk-bin 
-    src/main.cpp
-    src/window/window.h
-    src/window/window.cpp
-    src/logger.h
-    src/logger.cpp
-    src/vk/context.h
-    src/vk/context.cpp
-    src/vk/device.h
-    src/vk/device.cpp
-    src/vk/vulkan_error.h
-    src/vk/vulkan_error.cpp
-    src/vk/physical_device.h
-    src/vk/physical_device.cpp
-    src/vk/swapchain.h
-    src/vk/swapchain.cpp
-    src/vk/pipeline_builder.h
-    src/vk/pipeline_builder.cpp
-    src/vk/sync.h
-    src/vk/sync.cpp
+    "src/main.cpp"
+    "src/window/window.h"
+    "src/window/window.cpp"
+    "src/logger.h"
+    "src/logger.cpp"
+    "src/vk/context.h"
+    "src/vk/context.cpp"
+    "src/vk/device.h"
+    "src/vk/device.cpp"
+    "src/vk/vulkan_error.h"
+    "src/vk/vulkan_error.cpp"
+    "src/vk/physical_device.h"
+    "src/vk/physical_device.cpp"
+    "src/vk/swapchain.h"
+    "src/vk/swapchain.cpp"
+    "src/vk/pipeline_builder.h"
+    "src/vk/pipeline_builder.cpp"
+    "src/vk/sync.h"
+    "src/vk/sync.cpp"
 )
 
 target_include_directories(ugo-vk-bin PRIVATE src)
