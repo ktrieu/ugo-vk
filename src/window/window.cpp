@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "vk/vulkan_context.h"
+#include "vk/context.h"
 #include "vk/pipeline_builder.h"
 #include "vk/vulkan_error.h"
 #include "vk/sync.h"
@@ -118,15 +118,15 @@ const uint64_t ONE_SEC_NS = 1000000000;
 
 void Window::run()
 {
-    VulkanDevice& device = this->context.value().device();
+    vk::Device& device = this->context.value().device();
 
-    PipelineBuilder builder(device);
+    vk::PipelineBuilder builder(device);
     builder.set_vertex_shader_from_file("shader/tri.vert.spv");
     builder.set_fragment_shader_from_file("shader/tri.frag.spv");
     builder.set_color_format(this->context.value().swapchain().surface_format());
     builder.set_depth_format(VK_FORMAT_UNDEFINED);
 
-    GraphicsPipeline pipeline = builder.build();
+    vk::GraphicsPipeline pipeline = builder.build();
 
     VkCommandPool command_pool = device.alloc_graphics_pool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBuffer command_buffer = create_command_buffer(device.device(), command_pool);

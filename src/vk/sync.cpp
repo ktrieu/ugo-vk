@@ -1,9 +1,9 @@
 #include "sync.h"
 
-#include "vulkan_device.h"
+#include "device.h"
 #include "vulkan_error.h"
 
-vk::Semaphore::Semaphore(VulkanDevice& device, VkSemaphoreCreateFlags flags) : _device(device)
+vk::Semaphore::Semaphore(vk::Device& device, VkSemaphoreCreateFlags flags) : _device(device)
 {
     VkSemaphoreCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -33,7 +33,7 @@ VkSemaphoreSubmitInfo vk::Semaphore::submit_info(VkPipelineStageFlags2 stages)
     return info;
 }
 
-vk::Fence::Fence(VulkanDevice& device, VkFenceCreateFlags flags) : _device(device)
+vk::Fence::Fence(vk::Device& device, VkFenceCreateFlags flags) : _device(device)
 {
     VkFenceCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

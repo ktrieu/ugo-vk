@@ -3,7 +3,7 @@
 #include <string>
 #include <optional>
 
-#include "vk/vulkan_context.h"
+#include "vk/context.h"
 
 struct GLFWwindow;
 
@@ -19,7 +19,7 @@ public:
 
 private:
     GLFWwindow *window = nullptr;
-    std::optional<VulkanContext> context;
+    std::optional<vk::Context> context;
 
     int width;
     int height;

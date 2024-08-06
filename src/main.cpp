@@ -4,7 +4,6 @@
 #include <fmt/core.h>
 
 #include "window/window.h"
-#include "vk/vulkan_context.h"
 #include "logger.h"
 
 int main(int argc, char **argv)

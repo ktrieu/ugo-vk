@@ -4,12 +4,12 @@
 
 #include <algorithm>
 
-#include "vk/vulkan_context.h"
+#include "vk/context.h"
 #include "vk/vulkan_error.h"
 #include "vk/sync.h"
 #include "window/window.h"
 
-Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
+vk::Swapchain::Swapchain(vk::Context &context, Window &window) : _context(context)
 {
     VkSwapchainCreateInfoKHR info = {};
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -75,7 +75,7 @@ Swapchain::Swapchain(VulkanContext &context, Window &window) : _context(context)
     }
 }
 
-void Swapchain::destroy()
+void vk::Swapchain::destroy()
 {
     for (auto view : _image_views)
     {
@@ -85,7 +85,7 @@ void Swapchain::destroy()
     vkDestroySwapchainKHR(_context.vk_device(), _swapchain, nullptr);
 }
 
-uint32_t Swapchain::acquire_image(vk::Semaphore& completion)
+uint32_t vk::Swapchain::acquire_image(vk::Semaphore& completion)
 {
     uint32_t image_idx;
     auto result = vkAcquireNextImageKHR(_context.vk_device(), _swapchain, 1000000000, completion.vk_semaphore(), nullptr, &image_idx);
@@ -94,12 +94,12 @@ uint32_t Swapchain::acquire_image(vk::Semaphore& completion)
     return image_idx;
 }
 
-VkImage Swapchain::get_swapchain_image(uint32_t image_idx)
+VkImage vk::Swapchain::get_swapchain_image(uint32_t image_idx)
 {
     return _images.at(image_idx);
 }
 
-VkSurfaceFormatKHR Swapchain::select_format()
+VkSurfaceFormatKHR vk::Swapchain::select_format()
 {
     auto formats = _context.physical_device().get_surface_formats();
 
@@ -115,7 +115,7 @@ VkSurfaceFormatKHR Swapchain::select_format()
     return formats[0];
 }
 
-VkPresentModeKHR Swapchain::select_present_mode()
+VkPresentModeKHR vk::Swapchain::select_present_mode()
 {
     auto modes = _context.physical_device().get_present_modes();
 
@@ -132,7 +132,7 @@ VkPresentModeKHR Swapchain::select_present_mode()
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Swapchain::choose_swap_extent(Window &window)
+VkExtent2D vk::Swapchain::choose_swap_extent(Window &window)
 {
     auto caps = _context.physical_device().get_surface_caps();
 
@@ -156,7 +156,7 @@ VkExtent2D Swapchain::choose_swap_extent(Window &window)
     return caps.currentExtent;
 }
 
-VkImageView Swapchain::create_image_view(VkImage image)
+VkImageView vk::Swapchain::create_image_view(VkImage image)
 {
     VkImageViewCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

@@ -1,4 +1,4 @@
-#include "vulkan_device.h"
+#include "device.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -10,12 +10,12 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanDevice::VulkanDevice(VulkanContext &context, PhysicalDevice &device_info) : _context(context), _physical_device(device_info)
+vk::Device::Device(vk::Context &context, PhysicalDevice &device_info) : _context(context), _physical_device(device_info)
 {
 	this->create_logical_device();
 }
 
-void VulkanDevice::destroy()
+void vk::Device::destroy()
 {
 	vkDestroyDevice(this->_device, nullptr);
 }
@@ -35,17 +35,17 @@ VkCommandPool alloc_command_pool(VkDevice device, uint32_t queue_index, VkComman
 	return pool;
 }
 
-VkCommandPool VulkanDevice::alloc_graphics_pool(VkCommandPoolCreateFlags flags)
+VkCommandPool vk::Device::alloc_graphics_pool(VkCommandPoolCreateFlags flags)
 {
 	return alloc_command_pool(this->_device, this->graphics_family(), flags);
 }
 
-VkCommandPool VulkanDevice::alloc_transfer_pool(VkCommandPoolCreateFlags flags)
+VkCommandPool vk::Device::alloc_transfer_pool(VkCommandPoolCreateFlags flags)
 {
 	return alloc_command_pool(this->_device, this->transfer_family(), flags);
 }
 
-void VulkanDevice::create_logical_device()
+void vk::Device::create_logical_device()
 {
 	VkDeviceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

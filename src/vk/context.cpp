@@ -1,4 +1,4 @@
-#include "vulkan_context.h"
+#include "context.h"
 
 #include <string>
 #include <cstring>
@@ -12,7 +12,7 @@
 #include "vulkan_error.h"
 #include "logger.h"
 
-VulkanContext::VulkanContext(std::string_view app_name, Window &window) : _app_name(app_name)
+vk::Context::Context(std::string_view app_name, Window &window) : _app_name(app_name)
 {
     this->create_instance();
     this->create_surface(window);
@@ -20,7 +20,7 @@ VulkanContext::VulkanContext(std::string_view app_name, Window &window) : _app_n
     this->_swapchain.emplace(*this, window);
 }
 
-VulkanContext::~VulkanContext()
+vk::Context::~Context()
 {
     if (this->enable_validation_layers)
     {
@@ -44,7 +44,7 @@ VulkanContext::~VulkanContext()
     vkDestroyInstance(this->_instance, nullptr);
 }
 
-std::vector<const char *> VulkanContext::get_required_extensions()
+std::vector<const char *> vk::Context::get_required_extensions()
 {
     uint32_t numGlfwExtensions;
     const char **glfwExtensions;
@@ -68,7 +68,7 @@ const std::vector<const char *> REQUIRED_VALIDATION_LAYERS = {
     "VK_LAYER_KHRONOS_validation",
 };
 
-std::vector<const char *> VulkanContext::get_validation_layers()
+std::vector<const char *> vk::Context::get_validation_layers()
 {
     uint32_t num_layers;
     auto result = vkEnumerateInstanceLayerProperties(&num_layers, nullptr);
@@ -104,7 +104,7 @@ std::vector<const char *> VulkanContext::get_validation_layers()
     return validation_layers;
 }
 
-void VulkanContext::create_instance()
+void vk::Context::create_instance()
 {
     VkApplicationInfo app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -139,13 +139,13 @@ void VulkanContext::create_instance()
     }
 }
 
-void VulkanContext::create_surface(Window &window)
+void vk::Context::create_surface(Window &window)
 {
     auto result = glfwCreateWindowSurface(this->_instance, window.get_window(), nullptr, &this->_surface);
     vk_check(result);
 }
 
-VulkanDevice VulkanContext::select_physical_device()
+vk::Device vk::Context::select_physical_device()
 {
     uint32_t num_available;
     auto result = vkEnumeratePhysicalDevices(this->_instance, &num_available, nullptr);
@@ -179,7 +179,7 @@ VulkanDevice VulkanContext::select_physical_device()
 
     // Just return the first one for now.
     log("Selected device {}: {}", 0, device_infos[0].get_name());
-    return VulkanDevice(*this, device_infos[0]);
+    return vk::Device(*this, device_infos[0]);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -194,7 +194,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
-void VulkanContext::create_debug_messenger()
+void vk::Context::create_debug_messenger()
 {
     VkDebugUtilsMessengerCreateInfoEXT info = {};
 

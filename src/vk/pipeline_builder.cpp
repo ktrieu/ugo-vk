@@ -8,10 +8,10 @@
 
 #include <fmt/format.h>
 
-#include "vk/vulkan_device.h"
+#include "vk/device.h"
 #include "vk/vulkan_error.h"
 
-PipelineBuilder::PipelineBuilder(VulkanDevice& device) : _device(device)
+vk::PipelineBuilder::PipelineBuilder(vk::Device& device) : _device(device)
 {
 
 }
@@ -44,12 +44,12 @@ VkShaderModule create_shader_module(VkDevice device, std::string_view filename)
 	return module;
 }
 
-void PipelineBuilder::set_vertex_shader_from_file(std::string_view filename)
+void vk::PipelineBuilder::set_vertex_shader_from_file(std::string_view filename)
 {
 	_vertex_shader = create_shader_module(this->_device.device(), filename);
 }
 
-void PipelineBuilder::set_fragment_shader_from_file(std::string_view filename)
+void vk::PipelineBuilder::set_fragment_shader_from_file(std::string_view filename)
 {
 	_fragment_shader = create_shader_module(this->_device.device(), filename);
 }
@@ -66,17 +66,17 @@ VkPipelineShaderStageCreateInfo create_shader_stage_info(VkShaderModule shader, 
 	return info;
 }
 
-void PipelineBuilder::set_color_format(VkFormat format)
+void vk::PipelineBuilder::set_color_format(VkFormat format)
 {
 	_color_format = format;
 }
 
-void PipelineBuilder::set_depth_format(VkFormat format)
+void vk::PipelineBuilder::set_depth_format(VkFormat format)
 {
 	_depth_format = format;
 }
 
-GraphicsPipeline PipelineBuilder::build()
+vk::GraphicsPipeline vk::PipelineBuilder::build()
 {
 	if (_vertex_shader == VK_NULL_HANDLE || _fragment_shader == VK_NULL_HANDLE)
 	{

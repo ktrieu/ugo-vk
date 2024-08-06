@@ -52,10 +52,10 @@ add_executable(ugo-vk-bin
     src/window/window.cpp
     src/logger.h
     src/logger.cpp
-    src/vk/vulkan_context.h
-    src/vk/vulkan_context.cpp
-    src/vk/vulkan_device.h
-    src/vk/vulkan_device.cpp
+    src/vk/context.h
+    src/vk/context.cpp
+    src/vk/device.h
+    src/vk/device.cpp
     src/vk/vulkan_error.h
     src/vk/vulkan_error.cpp
     src/vk/physical_device.h
