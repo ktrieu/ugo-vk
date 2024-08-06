@@ -36,37 +36,6 @@ VkCommandBuffer create_command_buffer(VkDevice device, VkCommandPool pool)
     return buffer;
 }
 
-VkFence create_fence(VkDevice device, bool start_signaled)
-{
-    VkFenceCreateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-    if (start_signaled)
-    {
-        info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    }
-
-    VkFence fence;
-    auto result = vkCreateFence(device, &info, nullptr, &fence);
-    vk_check(result);
-
-    return fence;
-}
-
-VkSemaphore create_semaphore(VkDevice device, VkSemaphoreCreateFlags flags)
-{
-    VkSemaphoreCreateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    info.flags = flags;
-    
-    VkSemaphore semaphore;
-    auto result = vkCreateSemaphore(device, &info, nullptr, &semaphore);
-    vk_check(result);
-
-    return semaphore;
-}
-
 void begin_command_buffer(VkCommandBuffer buffer, VkCommandBufferUsageFlags flags)
 {
     VkCommandBufferBeginInfo info = {};
@@ -115,20 +84,6 @@ void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout current_
     dep_info.pImageMemoryBarriers = &barrier;
 
     vkCmdPipelineBarrier2(cmd, &dep_info);
-}
-
-VkSemaphoreSubmitInfo semaphore_submit_info(VkPipelineStageFlags2 stage_mask, VkSemaphore semaphore)
-{
-    VkSemaphoreSubmitInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-
-    info.semaphore = semaphore;
-    info.stageMask = stage_mask;
-
-    info.deviceIndex = 0;
-    info.value = 1;
-
-    return info;
 }
 
 VkCommandBufferSubmitInfo command_submit_info(VkCommandBuffer cmd)
