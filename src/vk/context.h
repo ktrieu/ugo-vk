@@ -16,6 +16,9 @@ namespace vk {
     class Context {
     public:
         Context(std::string_view app_name, Window &window);
+        Context(const Context& other) = delete;
+        Context& operator=(const Context& other) = delete;
+
         ~Context();
 
         vk::Device& device() { return _device.value(); }

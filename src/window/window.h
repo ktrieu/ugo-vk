@@ -12,6 +12,9 @@ class Window
 public:
     Window(int width, int height, std::string_view title);
     ~Window();
+    
+    Window& operator=(const Window& other) = delete;
+    Window(const Window& other) = delete;
 
     GLFWwindow* get_window() { return this->window; }
 

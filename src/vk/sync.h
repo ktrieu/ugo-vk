@@ -11,6 +11,9 @@ public:
 	Semaphore(vk::Device& device, VkSemaphoreCreateFlags flags);
 	~Semaphore();
 
+	Semaphore& operator=(const Semaphore& other) = delete;
+	Semaphore(const Semaphore& other) = delete;
+
 	VkSemaphore vk_semaphore() { return _semaphore; }
 	VkSemaphoreSubmitInfo submit_info(VkPipelineStageFlags2 stages);
 
@@ -23,6 +26,9 @@ class Fence {
 public:
 	Fence(vk::Device& device, VkFenceCreateFlags flags);
 	~Fence();
+
+	Fence& operator=(const Fence& other) = delete;
+	Fence(const Fence& other) = delete;
 
 	VkFence vk_fence() { return _fence; }
 
