@@ -68,6 +68,8 @@ add_executable(ugo-vk-bin
     "src/vk/sync.cpp"
     "src/vk/command_buffer.h"
     "src/vk/command_buffer.cpp"
+    "src/vk/image.h"
+    "src/vk/image.cpp"
 )
 
 target_include_directories(ugo-vk-bin PRIVATE src)

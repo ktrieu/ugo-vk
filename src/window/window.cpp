@@ -10,6 +10,7 @@
 #include "vk/command_buffer.h"
 #include "vk/vulkan_error.h"
 #include "vk/sync.h"
+#include "vk/image.h"
 
 Window::Window(int width, int height, std::string_view title) : width(width), height(height), title(title)
 {
@@ -24,7 +25,7 @@ VkImageSubresourceRange get_image_range(VkImageAspectFlags flags)
 {
     VkImageSubresourceRange subresource = {};
     // Update this when we support depth buffers.
-    subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;;
+    subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     subresource.baseArrayLayer = 0;
     subresource.baseMipLevel = 0;
     subresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
@@ -99,6 +100,23 @@ void Window::run()
 
     uint64_t frame_idx = 0;
 
+    vk::ImageBarrierState swapchain_image_state = {};
+    swapchain_image_state.stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    swapchain_image_state.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    swapchain_image_state.access = VK_ACCESS_2_MEMORY_WRITE_BIT;
+
+    vk::ImageBarrierState render_image_state = {};
+    render_image_state.stage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+    render_image_state.layout = VK_IMAGE_LAYOUT_GENERAL;
+    render_image_state.access = VK_ACCESS_2_MEMORY_WRITE_BIT | VK_ACCESS_2_MEMORY_READ_BIT;
+
+    vk::ImageBarrierState present_image_state = {};
+    present_image_state.stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    present_image_state.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    present_image_state.access = 0;
+
+    VkImageSubresourceRange image_range = vk::get_image_range(VK_IMAGE_ASPECT_COLOR_BIT);
+
     while (!glfwWindowShouldClose(this->window))
     {
         glfwPollEvents();
@@ -111,15 +129,15 @@ void Window::run()
         uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(swap_acquired);
         VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
 
-        transition_image(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+        vk::transition_image(cmd.buffer(), swap_image, image_range, swapchain_image_state, render_image_state);
 
         VkClearColorValue clear_color;
         clear_color = { {1.0f, (float)std::abs(std::sin((double)frame_idx / 10)), 1.0f, 1.0f} };
         VkImageSubresourceRange clear_range = get_image_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
-        vkCmdClearColorImage(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_GENERAL, &clear_color, 1, &clear_range);
+        vkCmdClearColorImage(cmd.buffer(), swap_image, render_image_state.layout, &clear_color, 1, &clear_range);
 
-        transition_image(cmd.buffer(), swap_image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        vk::transition_image(cmd.buffer(), swap_image, image_range, render_image_state, present_image_state);
 
         cmd.end();
 
