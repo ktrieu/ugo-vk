@@ -20,34 +20,6 @@ Window::Window(int width, int height, std::string_view title) : width(width), he
     this->context.emplace("ugo-vk", *this);
 }
 
-// If we need to later, move this to a method on a CommandPool class.
-VkCommandBuffer create_command_buffer(VkDevice device, VkCommandPool pool)
-{
-    VkCommandBufferAllocateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-
-    info.commandPool = pool;
-    info.commandBufferCount = 1;
-    info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    
-    VkCommandBuffer buffer;
-    auto result = vkAllocateCommandBuffers(device, &info, &buffer);
-    vk_check(result);
-
-    return buffer;
-}
-
-void begin_command_buffer(VkCommandBuffer buffer, VkCommandBufferUsageFlags flags)
-{
-    VkCommandBufferBeginInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    info.flags = flags;
-
-    auto result = vkBeginCommandBuffer(buffer, &info);
-    vk_check(result);
-}
-
 VkImageSubresourceRange get_image_range(VkImageAspectFlags flags)
 {
     VkImageSubresourceRange subresource = {};
@@ -85,17 +57,6 @@ void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout current_
     dep_info.pImageMemoryBarriers = &barrier;
 
     vkCmdPipelineBarrier2(cmd, &dep_info);
-}
-
-VkCommandBufferSubmitInfo command_submit_info(VkCommandBuffer cmd)
-{
-    VkCommandBufferSubmitInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
-
-    info.deviceMask = 0;
-    info.commandBuffer = cmd;
-
-    return info;
 }
 
 VkSubmitInfo2 create_submit_info(VkCommandBufferSubmitInfo* buffer_submit, VkSemaphoreSubmitInfo* wait, VkSemaphoreSubmitInfo* signal)
