@@ -150,21 +150,7 @@ void Window::run()
         auto result = vkQueueSubmit2(device.graphics_queue(), 1, &submit_info, render_fence.vk_fence());
         vk_check(result);
 
-        VkPresentInfoKHR present_info = {};
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-        present_info.swapchainCount = 1;
-        VkSwapchainKHR swapchain = this->context.value().vk_swapchain();
-        present_info.pSwapchains = &swapchain;
-        
-        present_info.waitSemaphoreCount = 1;
-        VkSemaphore present_wait = render_complete.vk_semaphore();
-        present_info.pWaitSemaphores = &present_wait;
-
-        present_info.pImageIndices = &swap_image_idx;
-
-        result = vkQueuePresentKHR(device.graphics_queue(), &present_info);
-        vk_check(result);
+        this->context.value().swapchain().present(swap_image_idx, device.graphics_queue(), render_complete);
 
         frame_idx++;
     }

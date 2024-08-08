@@ -20,6 +20,7 @@ namespace vk {
 
 		uint32_t acquire_image(vk::Semaphore& completion);
 		VkImage get_swapchain_image(uint32_t idx);
+		void present(uint32_t idx, VkQueue queue, vk::Semaphore& completion);
 
 		void destroy();
 

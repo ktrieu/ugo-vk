@@ -99,6 +99,24 @@ VkImage vk::Swapchain::get_swapchain_image(uint32_t image_idx)
     return _images.at(image_idx);
 }
 
+void vk::Swapchain::present(uint32_t idx, VkQueue queue, vk::Semaphore& completion)
+{
+    VkPresentInfoKHR present_info = {};
+    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    present_info.swapchainCount = 1;
+    present_info.pSwapchains = &_swapchain;
+
+    present_info.waitSemaphoreCount = 1;
+    VkSemaphore present_wait = completion.vk_semaphore();
+    present_info.pWaitSemaphores = &present_wait;
+
+    present_info.pImageIndices = &idx;
+
+    auto result = vkQueuePresentKHR(queue, &present_info);
+    vk_check(result);
+}
+
 VkSurfaceFormatKHR vk::Swapchain::select_format()
 {
     auto formats = _context.physical_device().get_surface_formats();
