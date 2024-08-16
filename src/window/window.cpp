@@ -34,6 +34,27 @@ VkImageSubresourceRange get_image_range(VkImageAspectFlags flags)
     return subresource;
 }
 
+VkRenderingAttachmentInfo create_color_attachment_info(VkImageView view, std::optional<VkClearValue> clear, VkImageLayout layout)
+{
+    VkRenderingAttachmentInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+
+    info.imageView = view;
+    info.imageLayout = layout;
+
+    if (clear.has_value()) {
+        info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        info.clearValue = clear.value();
+    }
+    else {
+        info.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    }
+
+    info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+    return info;
+}
+
 VkSubmitInfo2 create_submit_info(VkCommandBufferSubmitInfo* buffer_submit, VkSemaphoreSubmitInfo* wait, VkSemaphoreSubmitInfo* signal)
 {
     VkSubmitInfo2 info = {};
@@ -102,14 +123,42 @@ void Window::run()
 
         uint32_t swap_image_idx = this->context.value().swapchain().acquire_image(swap_acquired);
         VkImage swap_image = this->context.value().swapchain().get_swapchain_image(swap_image_idx);
+        VkImageView swap_image_view = this->context.value().swapchain().get_swapchain_image_view(swap_image_idx);
 
         vk::transition_image(cmd.buffer(), swap_image, image_range, swapchain_image_state, render_image_state);
 
         VkClearColorValue clear_color;
         clear_color = { {1.0f, (float)std::abs(std::sin((double)frame_idx / 10)), 1.0f, 1.0f} };
-        VkImageSubresourceRange clear_range = get_image_range(VK_IMAGE_ASPECT_COLOR_BIT);
+        
+        VkRenderingAttachmentInfo color_attachment_info = create_color_attachment_info(swap_image_view, VkClearValue { clear_color }, render_image_state.layout);
+        VkRenderingInfo rendering_info = {};
+        rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        
+        rendering_info.colorAttachmentCount = 1;
+        rendering_info.pColorAttachments = &color_attachment_info;
+        rendering_info.layerCount = 1;
+        rendering_info.renderArea.extent = this->context.value().swapchain().get_swap_extent();
+        rendering_info.renderArea.offset = { 0, 0 };
 
-        vkCmdClearColorImage(cmd.buffer(), swap_image, render_image_state.layout, &clear_color, 1, &clear_range);
+        vkCmdBeginRendering(cmd.buffer(), &rendering_info);
+
+        vkCmdBindPipeline(cmd.buffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+
+        VkViewport viewport;
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = this->width;
+        viewport.height = this->height;
+        viewport.maxDepth = 1.0f;
+        viewport.minDepth = 0.0f;
+        vkCmdSetViewport(cmd.buffer(), 0, 1, &viewport);
+
+        VkRect2D scissor = rendering_info.renderArea;
+        vkCmdSetScissor(cmd.buffer(), 0, 1, &scissor);
+
+        vkCmdDraw(cmd.buffer(), 3, 1, 0, 0);
+
+        vkCmdEndRendering(cmd.buffer());
 
         vk::transition_image(cmd.buffer(), swap_image, image_range, render_image_state, present_image_state);
 

@@ -19,7 +19,11 @@ namespace vk {
 		VkFormat surface_format() { return _surface_format; }
 
 		uint32_t acquire_image(vk::Semaphore& completion);
+
 		VkImage get_swapchain_image(uint32_t idx);
+		VkImageView get_swapchain_image_view(uint32_t idx);
+		VkExtent2D get_swap_extent() { return _swap_extent; }
+
 		void present(uint32_t idx, VkQueue queue, vk::Semaphore& completion);
 
 		void destroy();

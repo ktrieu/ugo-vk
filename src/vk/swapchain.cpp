@@ -99,6 +99,11 @@ VkImage vk::Swapchain::get_swapchain_image(uint32_t image_idx)
     return _images.at(image_idx);
 }
 
+VkImageView vk::Swapchain::get_swapchain_image_view(uint32_t image_idx)
+{
+    return _image_views.at(image_idx);
+}
+
 void vk::Swapchain::present(uint32_t idx, VkQueue queue, vk::Semaphore& completion)
 {
     VkPresentInfoKHR present_info = {};
