@@ -34,32 +34,6 @@ VkImageSubresourceRange get_image_range(VkImageAspectFlags flags)
     return subresource;
 }
 
-void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout current_layout, VkImageLayout next_layout)
-{
-    VkImageMemoryBarrier2 barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-
-    barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-    barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
-    barrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-    barrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT | VK_ACCESS_2_MEMORY_READ_BIT;
-
-    barrier.oldLayout = current_layout;
-    barrier.newLayout = next_layout;
-
-    barrier.subresourceRange = get_image_range(VK_IMAGE_ASPECT_COLOR_BIT);
-
-    barrier.image = image;
-
-    VkDependencyInfo dep_info = {};
-    dep_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-
-    dep_info.imageMemoryBarrierCount = 1;
-    dep_info.pImageMemoryBarriers = &barrier;
-
-    vkCmdPipelineBarrier2(cmd, &dep_info);
-}
-
 VkSubmitInfo2 create_submit_info(VkCommandBufferSubmitInfo* buffer_submit, VkSemaphoreSubmitInfo* wait, VkSemaphoreSubmitInfo* signal)
 {
     VkSubmitInfo2 info = {};
